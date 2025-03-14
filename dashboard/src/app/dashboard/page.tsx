@@ -12,21 +12,19 @@ import FlakyTestsTable from "@/components/tables/flaky-tests-table";
 import TestResultsChart from "@/components/charts/test-results-chart";
 import RepositorySelector from "@/components/repository-selector";
 import FlakinessMetrics from "@/components/flakiness-metrics";
+import { Header } from "@/components/header";
 
 export default function Dashboard() {
   return (
     <div className="flex min-h-screen flex-col">
-      <div className="border-b">
-        <div className="flex h-16 items-center px-4">
-          <div className="flex items-center space-x-4">
-            <h1 className="text-xl font-bold">Flaky Test Manager</h1>
-          </div>
-        </div>
-      </div>
-      <div className="flex-1 space-y-4 p-8 pt-6">
+      <Header />
+
+      <main className="flex-1 space-y-4 p-8 pt-6">
         <div className="flex items-center justify-between space-y-2">
           <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-          <RepositorySelector />
+          <div className="flex items-center space-x-2">
+            <RepositorySelector />
+          </div>
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <FlakinessMetrics />
@@ -79,7 +77,7 @@ export default function Dashboard() {
             </TabsContent>
           </Tabs>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
