@@ -1,0 +1,124 @@
+name: "Cypress Test Runner with Flake Suppression"
+description: "Run Cypress tests with automatic flaky test detection and suppression"
+author: "Your Name"
+
+inputs:
+  dashboard-url:
+    description: "URL to the flaky test dashboard API"
+    required: true
+  api-key:
+    description: "API key for authenticating with the dashboard"
+    required: true
+  spec:
+    description: "Cypress spec pattern to run"
+    required: false
+    default: "cypress/e2e/**/*.cy.{js,jsx,ts,tsx}"
+  browser:
+    description: "Browser to run tests in"
+    required: false
+    default: "chrome"
+  record:
+    description: "Whether to record test results"
+    required: false
+    default: "false"
+  parallel:
+    description: "Whether to run tests in parallel"
+    required: false
+    default: "false"
+  # Additional inputs to pass through to the Cypress GitHub Action
+  working-directory:
+    description: "Working directory containing Cypress"
+    required: false
+    default: "."
+  install:
+    description: "Whether to install dependencies"
+    required: false
+    default: "true"
+  config:
+    description: "Cypress configuration settings"
+    required: false
+  project:
+    description: "Path to Cypress project"
+    required: false
+  build:
+    description: "Command to run before starting tests"
+    required: false
+  start:
+    description: "Command to start the server before running tests"
+    required: false
+  wait-on:
+    description: "URL to wait for before starting tests"
+    required: false
+  wait-on-timeout:
+    description: "Time to wait for wait-on URL to be available"
+    required: false
+  cypress-version:
+    description: "Version of Cypress to use"
+    required: false
+  command-prefix:
+    description: "Prefix for Cypress commands"
+    required: false
+  group:
+    description: "Group name for recorded runs"
+    required: false
+  tag:
+    description: "Tags for recorded runs"
+    required: false
+  config-file:
+    description: "Path to Cypress config file"
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: "18"
+
+    - name: Install Dependencies
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: |
+        npm ci || npm install
+
+    - name: Filter Flaky Tests
+      id: filter-specs
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: |
+        node dist/filter-specs.js
+
+    - name: Run Cypress Tests
+      uses: cypress-io/github-action@v5
+      with:
+        spec: ${{ steps.filter-specs.outputs.filtered_spec }}
+        browser: ${{ inputs.browser }}
+        record: ${{ inputs.record }}
+        parallel: ${{ inputs.parallel }}
+        working-directory: ${{ inputs.working-directory }}
+        install: ${{ inputs.install }}
+        config: ${{ inputs.config }}
+        project: ${{ inputs.project }}
+        build: ${{ inputs.build }}
+        start: ${{ inputs.start }}
+        wait-on: ${{ inputs.wait-on }}
+        wait-on-timeout: ${{ inputs.wait-on-timeout }}
+        cypress-version: ${{ inputs.cypress-version }}
+        command-prefix: ${{ inputs.command-prefix }}
+        group: ${{ inputs.group }}
+        tag: ${{ inputs.tag }}
+        config-file: ${{ inputs.config-file }}
+
+    - name: Report Test Results
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: |
+        node dist/report-results.js
+
+branding:
+  icon: "shield"
+  color: "green"

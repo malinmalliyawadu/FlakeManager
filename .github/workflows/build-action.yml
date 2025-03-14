@@ -1,0 +1,41 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "github-action/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - "github-action/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+          cache: "npm"
+          cache-dependency-path: github-action/package-lock.json
+
+      - name: Install dependencies
+        working-directory: github-action
+        run: npm ci || npm install
+
+      - name: Build
+        working-directory: github-action
+        run: npm run build
+
+      - name: Commit and push if changed
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add -f github-action/dist/
+          git diff --quiet && git diff --staged --quiet || git commit -m "Automatic build"
+          git push

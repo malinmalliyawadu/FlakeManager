@@ -1,0 +1,39 @@
+name: Cypress Tests with Flake Management
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  cypress-run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Start application
+        run: npm start & npx wait-on http://localhost:3000
+
+      - name: Run Cypress tests with flake suppression
+        uses: ./.github/actions/cypress-flake-suppression
+        with:
+          dashboard-url: ${{ secrets.FLAKY_DASHBOARD_URL }}
+          api-key: ${{ secrets.FLAKY_DASHBOARD_API_KEY }}
+          spec: "cypress/e2e/**/*.cy.{js,ts}"
+          browser: "chrome"
+          record: "true"
+          parallel: "false"
