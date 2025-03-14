@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Flaky Test Manager",
-  description: "Manage and suppress flaky Cypress tests in your CI pipeline",
+  description: "Manage and suppress flaky Cypress tests in your CI pipeline"
 };
 
 export default function RootLayout({
