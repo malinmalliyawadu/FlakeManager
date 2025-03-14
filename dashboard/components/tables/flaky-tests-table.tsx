@@ -176,9 +176,7 @@ export default function FlakyTestsTable() {
                     {test.jiraTicket}
                   </a>
                 ) : (
-                  <Badge variant="outline" className="bg-gray-100">
-                    None
-                  </Badge>
+                  <Badge variant="outline">None</Badge>
                 )}
               </TableCell>
               <TableCell>
