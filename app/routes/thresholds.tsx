@@ -116,13 +116,11 @@ export default function Thresholds() {
 
   return (
     <div className="container">
-      <div className="flex items-center justify-between">
-        <header className="mb-6">
-          <h1 className="text-3xl font-bold tracking-tight">Thresholds</h1>
-          <p className="text-muted-foreground mt-2">
-            Set the thresholds for test flakiness and failure rate
-          </p>
-        </header>
+      <div className="contents-start flex items-center justify-between">
+        <PageHeader
+          title="Thresholds"
+          description={`Set the thresholds for test flakiness and failure rate`}
+        />
         <MetricsSlideOver
           repository={repository}
           tests={tests}

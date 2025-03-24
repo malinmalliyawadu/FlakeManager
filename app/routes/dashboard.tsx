@@ -37,7 +37,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-8">
-      <div className="container mx-auto px-4 md:px-6">
+      <div className="container mx-auto">
         <PageHeader
           title={`${repository?.name || "Dashboard"}`}
           description={`Monitor and manage flaky tests in ${repository?.description || "your Cypress test suite"}.`}
