@@ -14,6 +14,7 @@ import {
 } from "~/components/ui/select";
 import { type Repository } from "~/types/cypress";
 import { cn } from "~/lib/utils";
+import { ThemeToggle } from "./ui/theme-toggle";
 
 interface AppHeaderProps {
   repositories: Repository[];
@@ -49,7 +50,7 @@ export function AppHeader({
   };
 
   return (
-    <header className="via-background sticky top-0 z-10 border-b bg-gradient-to-r from-blue-50/70 to-cyan-50/70 backdrop-blur supports-[backdrop-filter]:bg-opacity-80">
+    <header className="via-background sticky top-0 z-10 border-b bg-gradient-to-r from-blue-50/70 to-cyan-50/70 backdrop-blur supports-[backdrop-filter]:bg-opacity-80 dark:border-slate-800 dark:from-slate-950/90 dark:to-slate-900/90">
       <div className="mx-auto max-w-screen-lg px-4 py-3 md:px-8">
         <div className="flex h-16 items-center">
           <div className="mr-4 flex items-center">
@@ -61,7 +62,7 @@ export function AppHeader({
                 <Snowflake className="h-6 w-6 text-white drop-shadow-sm transition-transform duration-700 ease-in-out group-hover:rotate-180" />
               </div>
               <div className="flex flex-col justify-center">
-                <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-xl font-extrabold leading-none tracking-tight text-transparent">
+                <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-xl font-extrabold leading-none tracking-tight text-transparent dark:from-blue-400 dark:to-cyan-300">
                   Flake Manager
                 </span>
                 <span className="text-muted-foreground mt-1 text-[10px] font-medium tracking-wide">
@@ -81,8 +82,8 @@ export function AppHeader({
                   className={cn(
                     "flex h-8 w-8 items-center justify-center rounded-full p-1.5 transition-all duration-200",
                     isDashboardActive
-                      ? "bg-blue-100 text-blue-700 shadow-sm"
-                      : "bg-blue-100/50 text-blue-600 group-hover:bg-blue-100 group-hover:text-blue-700",
+                      ? "bg-blue-100 text-blue-700 shadow-sm dark:bg-blue-900/40 dark:text-blue-400"
+                      : "bg-blue-100/50 text-blue-600 group-hover:bg-blue-100 group-hover:text-blue-700 dark:bg-blue-900/20 dark:text-blue-500 dark:group-hover:bg-blue-900/40 dark:group-hover:text-blue-400",
                   )}
                 >
                   <LayoutDashboard className="h-full w-full" />
@@ -91,8 +92,8 @@ export function AppHeader({
                   className={cn(
                     "w-16 text-center text-xs font-medium transition-colors",
                     isDashboardActive
-                      ? "text-blue-600"
-                      : "text-muted-foreground group-hover:text-blue-600",
+                      ? "text-blue-600 dark:text-blue-400"
+                      : "text-muted-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400",
                   )}
                 >
                   <span className={isDashboardActive ? "font-semibold" : ""}>
@@ -101,7 +102,7 @@ export function AppHeader({
                 </span>
                 <div
                   className={cn(
-                    "h-[2px] w-full rounded-full bg-blue-500 transition-transform duration-200",
+                    "h-[2px] w-full rounded-full bg-blue-500 transition-transform duration-200 dark:bg-blue-400",
                     isDashboardActive
                       ? "scale-100"
                       : "scale-0 group-hover:scale-100",
@@ -119,8 +120,8 @@ export function AppHeader({
                   className={cn(
                     "flex h-8 w-8 items-center justify-center rounded-full p-1.5 transition-all duration-200",
                     isThresholdsActive
-                      ? "bg-blue-100 text-blue-700 shadow-sm"
-                      : "bg-blue-100/50 text-blue-600 group-hover:bg-blue-100 group-hover:text-blue-700",
+                      ? "bg-blue-100 text-blue-700 shadow-sm dark:bg-blue-900/40 dark:text-blue-400"
+                      : "bg-blue-100/50 text-blue-600 group-hover:bg-blue-100 group-hover:text-blue-700 dark:bg-blue-900/20 dark:text-blue-500 dark:group-hover:bg-blue-900/40 dark:group-hover:text-blue-400",
                   )}
                 >
                   <Settings className="h-full w-full" />
@@ -129,8 +130,8 @@ export function AppHeader({
                   className={cn(
                     "w-16 text-center text-xs font-medium transition-colors",
                     isThresholdsActive
-                      ? "text-blue-600"
-                      : "text-muted-foreground group-hover:text-blue-600",
+                      ? "text-blue-600 dark:text-blue-400"
+                      : "text-muted-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400",
                   )}
                 >
                   <span className={isThresholdsActive ? "font-semibold" : ""}>
@@ -139,7 +140,7 @@ export function AppHeader({
                 </span>
                 <div
                   className={cn(
-                    "h-[2px] w-full rounded-full bg-blue-500 transition-transform duration-200",
+                    "h-[2px] w-full rounded-full bg-blue-500 transition-transform duration-200 dark:bg-blue-400",
                     isThresholdsActive
                       ? "scale-100"
                       : "scale-0 group-hover:scale-100",
@@ -148,13 +149,14 @@ export function AppHeader({
               </Link>
             </nav>
           </div>
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-4">
+            <ThemeToggle />
             <Select
               defaultValue={selectedRepo}
               onValueChange={handleRepoChange}
             >
-              <SelectTrigger className="h-10 w-[240px] border-blue-100/80 bg-white/70 focus:ring-blue-200">
-                <Database className="mr-2 h-4 w-4 text-blue-500" />
+              <SelectTrigger className="h-10 w-[240px] border-blue-100/80 bg-white/70 focus:ring-blue-200 dark:border-blue-900/30 dark:bg-slate-900/70 dark:focus:ring-blue-800">
+                <Database className="mr-2 h-4 w-4 text-blue-500 dark:text-blue-400" />
                 <SelectValue placeholder="Select repository" />
               </SelectTrigger>
               <SelectContent>

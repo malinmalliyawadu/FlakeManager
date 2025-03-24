@@ -17,6 +17,7 @@ import { Toaster } from "sonner";
 import { getCypressService } from "~/services/cypress.server";
 import { type Repository } from "~/types/cypress";
 import { AppHeader } from "~/components/app-header";
+import { ThemeProvider } from "~/components/ui/theme-provider";
 
 import stylesheet from "~/tailwind.css";
 
@@ -41,6 +42,39 @@ export async function loader({ request }: LoaderFunctionArgs) {
   });
 }
 
+// Inline script to set the theme class before the first render
+// to avoid flickering from light to dark theme
+function ThemePreload() {
+  return (
+    <script
+      dangerouslySetInnerHTML={{
+        __html: `
+          (function () {
+            function getThemePreference() {
+              const theme = window.localStorage.getItem('flake-manager-theme');
+              if (theme) return theme;
+              
+              return window.matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light';
+            }
+            
+            const theme = getThemePreference();
+            
+            document.documentElement.classList.add(
+              theme === 'system' 
+                ? window.matchMedia('(prefers-color-scheme: dark)').matches
+                  ? 'dark'
+                  : 'light'
+                : theme
+            );
+          })();
+        `,
+      }}
+    />
+  );
+}
+
 export default function App() {
   const { repositories, selectedRepo, repository } =
     useLoaderData<typeof loader>();
@@ -53,25 +87,28 @@ export default function App() {
         <title>Flake Manager</title>
         <Meta />
         <Links />
+        <ThemePreload />
       </head>
       <body className="bg-background h-full">
-        <div className="flex min-h-screen flex-col">
-          <AppHeader
-            repositories={repositories}
-            selectedRepo={selectedRepo}
-            repository={repository}
-          />
+        <ThemeProvider defaultTheme="system" storageKey="flake-manager-theme">
+          <div className="flex min-h-screen flex-col">
+            <AppHeader
+              repositories={repositories}
+              selectedRepo={selectedRepo}
+              repository={repository}
+            />
 
-          <main className="bg-background flex-1">
-            <div className="mx-auto max-w-screen-lg px-4 py-8 md:px-8">
-              <Outlet />
-            </div>
-          </main>
-        </div>
-        <Toaster position="top-right" richColors closeButton />
-        <ScrollRestoration />
-        <Scripts />
-        <LiveReload />
+            <main className="bg-background flex-1">
+              <div className="mx-auto max-w-screen-lg px-4 py-8 md:px-8">
+                <Outlet />
+              </div>
+            </main>
+          </div>
+          <Toaster position="top-right" richColors closeButton />
+          <ScrollRestoration />
+          <Scripts />
+          <LiveReload />
+        </ThemeProvider>
       </body>
     </html>
   );
