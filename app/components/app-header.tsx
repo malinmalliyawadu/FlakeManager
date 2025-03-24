@@ -4,7 +4,6 @@ import {
   ExternalLink,
   LayoutDashboard,
   Settings,
-  Code,
   Snowflake,
 } from "lucide-react";
 import { Button } from "~/components/ui/button";
@@ -45,11 +44,21 @@ export function AppHeader({
       <div className="mx-auto max-w-screen-lg px-4 md:px-8">
         <div className="flex h-14 items-center">
           <div className="mr-4 flex">
-            <Link to="/dashboard" className="mr-6 flex items-center space-x-1">
-              <Snowflake className="h-5 w-5" />
-              <span className="text-xl font-bold tracking-tight">
-                Flake Manager
-              </span>
+            <Link
+              to="/dashboard"
+              className="group mr-6 flex items-center gap-2 transition-colors hover:opacity-90"
+            >
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-gradient-to-br from-blue-500 to-cyan-300 shadow-sm transition-all duration-300 ease-in-out group-hover:shadow-md">
+                <Snowflake className="h-5 w-5 text-white drop-shadow-sm transition-transform duration-700 ease-in-out group-hover:rotate-180" />
+              </div>
+              <div className="flex flex-col">
+                <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-lg font-extrabold leading-none tracking-tight text-transparent">
+                  Flake Manager
+                </span>
+                <span className="text-muted-foreground text-[10px] font-medium">
+                  CYPRESS TEST MANAGEMENT
+                </span>
+              </div>
             </Link>
             <nav className="flex items-center gap-6 text-sm">
               <Link
