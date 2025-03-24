@@ -67,6 +67,7 @@ const repoTestData: Record<string, Test[]> = {
       flakeRate: 3,
       failureRate: 1,
       excluded: false,
+      manualOverride: false,
     },
     {
       id: "ma-2",
@@ -74,7 +75,9 @@ const repoTestData: Record<string, Test[]> = {
       file: "navigation.spec.ts",
       flakeRate: 8,
       failureRate: 4,
+      // Manually excluded despite being below failure threshold
       excluded: true,
+      manualOverride: true,
     },
     {
       id: "ma-3",
@@ -83,6 +86,7 @@ const repoTestData: Record<string, Test[]> = {
       flakeRate: 1,
       failureRate: 0,
       excluded: false,
+      manualOverride: false,
     },
   ],
   "admin-portal": [
@@ -93,6 +97,7 @@ const repoTestData: Record<string, Test[]> = {
       flakeRate: 0,
       failureRate: 0,
       excluded: false,
+      manualOverride: false,
     },
     {
       id: "ap-2",
@@ -100,7 +105,9 @@ const repoTestData: Record<string, Test[]> = {
       file: "users.spec.ts",
       flakeRate: 4,
       failureRate: 12,
+      // Auto-excluded due to exceeding failure threshold (12 > 10)
       excluded: true,
+      manualOverride: false,
     },
     {
       id: "ap-3",
@@ -108,7 +115,9 @@ const repoTestData: Record<string, Test[]> = {
       file: "permissions.spec.ts",
       flakeRate: 7,
       failureRate: 3,
+      // Manually excluded despite being below thresholds
       excluded: true,
+      manualOverride: true,
     },
   ],
   "demo-repo": [
@@ -119,6 +128,7 @@ const repoTestData: Record<string, Test[]> = {
       flakeRate: 1,
       failureRate: 2,
       excluded: false,
+      manualOverride: false,
     },
     {
       id: "2",
@@ -126,7 +136,9 @@ const repoTestData: Record<string, Test[]> = {
       file: "auth.spec.ts",
       flakeRate: 7,
       failureRate: 3,
+      // Manually excluded despite being below thresholds
       excluded: true,
+      manualOverride: true,
     },
     {
       id: "3",
@@ -135,6 +147,7 @@ const repoTestData: Record<string, Test[]> = {
       flakeRate: 0,
       failureRate: 0,
       excluded: false,
+      manualOverride: false,
     },
     {
       id: "4",
@@ -142,7 +155,9 @@ const repoTestData: Record<string, Test[]> = {
       file: "cart.spec.ts",
       flakeRate: 12,
       failureRate: 5,
+      // Auto-excluded due to exceeding flake threshold (12 > 5)
       excluded: true,
+      manualOverride: false,
     },
     {
       id: "5",
@@ -150,7 +165,9 @@ const repoTestData: Record<string, Test[]> = {
       file: "checkout.spec.ts",
       flakeRate: 2,
       failureRate: 15,
+      // Auto-excluded due to exceeding failure threshold (15 > 10)
       excluded: true,
+      manualOverride: false,
     },
     {
       id: "6",
@@ -159,6 +176,7 @@ const repoTestData: Record<string, Test[]> = {
       flakeRate: 3,
       failureRate: 4,
       excluded: false,
+      manualOverride: false,
     },
     {
       id: "7",
@@ -166,7 +184,9 @@ const repoTestData: Record<string, Test[]> = {
       file: "profile.spec.ts",
       flakeRate: 6,
       failureRate: 11,
+      // Auto-excluded due to exceeding failure threshold (11 > 10)
       excluded: true,
+      manualOverride: false,
     },
     {
       id: "8",
@@ -175,6 +195,27 @@ const repoTestData: Record<string, Test[]> = {
       flakeRate: 0,
       failureRate: 1,
       excluded: false,
+      manualOverride: false,
+    },
+    {
+      id: "9",
+      name: "should handle network errors gracefully",
+      file: "errors.spec.ts",
+      flakeRate: 8,
+      failureRate: 12,
+      // Auto-excluded due to exceeding both thresholds
+      excluded: true,
+      manualOverride: false,
+    },
+    {
+      id: "10",
+      name: "should display correct prices",
+      file: "products.spec.ts",
+      flakeRate: 9,
+      failureRate: 13,
+      // Manually included despite exceeding both thresholds
+      excluded: false,
+      manualOverride: true,
     },
   ],
 };
@@ -243,14 +284,7 @@ export class CypressService {
     // Get tests for the specified repository or return a default set
     const tests = repoTestData[repo] || [];
 
-    // Auto-mark tests as excluded if they exceed thresholds
-    return tests.map((test) => ({
-      ...test,
-      excluded:
-        test.excluded ||
-        test.flakeRate > thresholds.flakeThreshold ||
-        test.failureRate > thresholds.failureThreshold,
-    }));
+    return tests;
   }
 
   async toggleTestExclusion(
@@ -260,15 +294,35 @@ export class CypressService {
   ): Promise<Test | null> {
     // For now, we'll just return a mocked response
     // In a real implementation, this would update a database or call an API
-    const tests = await this.getTestsForRepo(repo);
-    const test = tests.find((t) => t.id === testId);
+    const repoTests = repoTestData[repo] || [];
+    const testIndex = repoTests.findIndex((t) => t.id === testId);
 
-    if (!test) return null;
+    if (testIndex === -1) return null;
 
-    return {
+    // Determine if this would be a threshold override
+    const test = repoTests[testIndex];
+    const repository = await this.getRepository(repo);
+    const flakeThreshold = repository?.flakeThreshold || 5;
+    const failureThreshold = repository?.failureThreshold || 10;
+
+    const wouldExceedThreshold =
+      test.flakeRate > flakeThreshold || test.failureRate > failureThreshold;
+
+    // It's a manual override if:
+    // 1. It should be excluded by thresholds but is being included (excluded=false)
+    // 2. It shouldn't be excluded by thresholds but is being excluded (excluded=true)
+    const isManualOverride =
+      (wouldExceedThreshold && !excluded) ||
+      (!wouldExceedThreshold && excluded);
+
+    // Update the test in our mock data
+    repoTestData[repo][testIndex] = {
       ...test,
       excluded,
+      manualOverride: isManualOverride,
     };
+
+    return repoTestData[repo][testIndex];
   }
 }
 

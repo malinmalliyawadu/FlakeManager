@@ -5,6 +5,7 @@ export interface Test {
   flakeRate: number;
   failureRate: number;
   excluded: boolean;
+  manualOverride?: boolean;
 }
 
 export interface Repository {

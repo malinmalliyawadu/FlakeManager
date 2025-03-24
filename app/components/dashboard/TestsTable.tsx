@@ -93,21 +93,11 @@ export function TestsTable({
             </TableHeader>
             <TableBody>
               {filteredTests.map((test: Test) => {
-                // Determine if this test should be excluded based on thresholds
-                const shouldBeExcluded =
-                  test.flakeRate > (repository?.flakeThreshold || 5) ||
-                  test.failureRate > (repository?.failureThreshold || 10);
-
-                // Check if the test is manually overridden
-                const isManuallyOverridden =
-                  (shouldBeExcluded && !test.excluded) ||
-                  (!shouldBeExcluded && test.excluded);
-
                 return (
                   <TableRow
                     key={test.id}
                     className={
-                      isManuallyOverridden
+                      test.manualOverride
                         ? "bg-amber-50 dark:bg-amber-950/20"
                         : ""
                     }
@@ -115,7 +105,7 @@ export function TestsTable({
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
                         {test.name}
-                        {isManuallyOverridden && (
+                        {test.manualOverride && (
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
@@ -152,7 +142,7 @@ export function TestsTable({
                     <TableCell>
                       <Badge
                         variant={test.excluded ? "destructive" : "success"}
-                        className={`font-medium ${isManuallyOverridden ? "border-2 border-amber-500" : ""}`}
+                        className={`font-medium ${test.manualOverride ? "border-2 border-amber-500" : ""}`}
                       >
                         {test.excluded ? "Excluded" : "Included"}
                       </Badge>

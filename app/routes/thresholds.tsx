@@ -10,35 +10,34 @@ import {
   useLoaderData,
 } from "@remix-run/react";
 import { useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
-import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
-import { toast } from "sonner";
-import { Save, ChevronLeft } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { PageHeader } from "~/components/page-header";
-import { Label } from "~/components/ui/label";
 import { getCypressService } from "~/services/cypress.server";
+import { ThresholdsForm } from "~/components/thresholds/ThresholdsForm";
+import { ThresholdsImpact } from "~/components/thresholds/ThresholdsImpact";
+import { MetricsSlideOver } from "~/components/thresholds/MetricsSlideOver";
+import { RepoSelector } from "~/components/dashboard/RepoSelector";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const cypressService = getCypressService();
   const url = new URL(request.url);
   const selectedRepo = url.searchParams.get("repo") || "demo-repo";
 
+  const repositories = await cypressService.getRepositories();
   const repository = await cypressService.getRepository(selectedRepo);
   if (!repository) {
     throw new Response("Repository not found", { status: 404 });
   }
 
+  // Get all tests to show the impact of threshold changes
+  const tests = await cypressService.getTestsForRepo(selectedRepo);
+
   return json({
     repository,
+    repositories,
     selectedRepo,
+    tests,
   });
 }
 
@@ -83,105 +82,69 @@ export async function action({ request }: ActionFunctionArgs) {
   return redirect(`/dashboard?repo=${repoId}`);
 }
 
-export default function ThresholdsPage() {
-  const { repository, selectedRepo } = useLoaderData<typeof loader>();
+export default function Thresholds() {
+  const { repository, repositories, selectedRepo, tests } =
+    useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
 
-  const [flakeThreshold, setFlakeThreshold] = useState(
-    actionData?.values?.flakeThreshold ?? repository.flakeThreshold,
-  );
-  const [failureThreshold, setFailureThreshold] = useState(
-    actionData?.values?.failureThreshold ?? repository.failureThreshold,
-  );
+  const [thresholds, setThresholds] = useState({
+    flakeThreshold: repository?.flakeThreshold || 0,
+    failureThreshold: repository?.failureThreshold || 0,
+  });
+
+  // Handle threshold changes from the form
+  const handleThresholdChange = ({
+    flakeThreshold,
+    failureThreshold,
+  }: {
+    flakeThreshold?: number;
+    failureThreshold?: number;
+  }) => {
+    setThresholds((prev) => ({
+      flakeThreshold:
+        flakeThreshold !== undefined ? flakeThreshold : prev.flakeThreshold,
+      failureThreshold:
+        failureThreshold !== undefined
+          ? failureThreshold
+          : prev.failureThreshold,
+    }));
+  };
+
+  if (!repository) {
+    return <div>Loading...</div>;
+  }
 
   return (
-    <div className="space-y-8">
-      <PageHeader
-        title={`Configure Thresholds: ${repository.name}`}
-        description="Set thresholds for when tests should be automatically excluded from test runs."
-      />
+    <div className="container">
+      <div className="flex items-center justify-between">
+        <header className="mb-6">
+          <h1 className="text-3xl font-bold tracking-tight">Thresholds</h1>
+          <p className="text-muted-foreground mt-2">
+            Set the thresholds for test flakiness and failure rate
+          </p>
+        </header>
+        <MetricsSlideOver
+          repository={repository}
+          tests={tests}
+          flakeThreshold={thresholds.flakeThreshold}
+          failureThreshold={thresholds.failureThreshold}
+        />
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Threshold Settings</CardTitle>
-          <CardDescription>
-            Tests that exceed these thresholds will be automatically excluded
-            from test runs.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <RemixForm method="post" className="space-y-6">
-            <input type="hidden" name="repoId" value={selectedRepo} />
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="flakeThreshold">Flake Rate Threshold (%)</Label>
-                <Input
-                  type="number"
-                  id="flakeThreshold"
-                  name="flakeThreshold"
-                  min="0"
-                  max="100"
-                  value={flakeThreshold}
-                  onChange={(e) =>
-                    setFlakeThreshold(parseInt(e.target.value) || 0)
-                  }
-                />
-                {actionData?.errors?.flakeThreshold && (
-                  <p className="text-destructive text-sm">
-                    {actionData.errors.flakeThreshold}
-                  </p>
-                )}
-                <p className="text-muted-foreground text-[0.8rem]">
-                  Tests with a flake rate above this percentage will be
-                  automatically excluded.
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="failureThreshold">
-                  Failure Rate Threshold (%)
-                </Label>
-                <Input
-                  type="number"
-                  id="failureThreshold"
-                  name="failureThreshold"
-                  min="0"
-                  max="100"
-                  value={failureThreshold}
-                  onChange={(e) =>
-                    setFailureThreshold(parseInt(e.target.value) || 0)
-                  }
-                />
-                {actionData?.errors?.failureThreshold && (
-                  <p className="text-destructive text-sm">
-                    {actionData.errors.failureThreshold}
-                  </p>
-                )}
-                <p className="text-muted-foreground text-[0.8rem]">
-                  Tests with a failure rate above this percentage will be
-                  automatically excluded.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex justify-end space-x-2">
-              <Button variant="outline" asChild>
-                <a
-                  href={`/dashboard?repo=${selectedRepo}`}
-                  className="flex items-center"
-                >
-                  <ChevronLeft className="mr-1 h-4 w-4" />
-                  Cancel
-                </a>
-              </Button>
-              <Button type="submit">
-                <Save className="mr-2 h-4 w-4" />
-                Save Changes
-              </Button>
-            </div>
-          </RemixForm>
-        </CardContent>
-      </Card>
+      <div className="space-y-6">
+        <ThresholdsForm
+          repository={repository}
+          selectedRepo={selectedRepo}
+          tests={tests}
+          actionData={actionData}
+          onChange={{
+            flakeThreshold: (value: number) =>
+              handleThresholdChange({ flakeThreshold: value }),
+            failureThreshold: (value: number) =>
+              handleThresholdChange({ failureThreshold: value }),
+          }}
+        />
+      </div>
     </div>
   );
 }
