@@ -4,8 +4,26 @@ import {
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
 } from "@remix-run/node";
-import { Form, useActionData, useLoaderData } from "@remix-run/react";
+import {
+  Form as RemixForm,
+  useActionData,
+  useLoaderData,
+} from "@remix-run/react";
 import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
+import { Input } from "~/components/ui/input";
+import { Button } from "~/components/ui/button";
+import { toast } from "sonner";
+import { Save, ChevronLeft } from "lucide-react";
+import { PageHeader } from "~/components/page-header";
+import { Label } from "~/components/ui/label";
 
 // In a real app, these would be stored in a database or config file
 const DEFAULT_THRESHOLDS = {
@@ -55,7 +73,7 @@ export async function action({ request }: ActionFunctionArgs) {
     failureThreshold,
   };
 
-  return redirect("/");
+  return redirect("/dashboard");
 }
 
 export default function ThresholdsPage() {
@@ -70,109 +88,89 @@ export default function ThresholdsPage() {
   );
 
   return (
-    <div className="px-4 py-8 sm:px-6 lg:px-8">
-      <div className="sm:flex sm:items-center">
-        <div className="sm:flex-auto">
-          <h1 className="text-2xl font-semibold text-gray-900">
-            Configure Thresholds
-          </h1>
-          <p className="mt-2 text-sm text-gray-700">
-            Set thresholds for when tests should be automatically excluded from
-            test runs.
-          </p>
-        </div>
-      </div>
+    <div className="space-y-8">
+      <PageHeader
+        title="Configure Thresholds"
+        description="Set thresholds for when tests should be automatically excluded from test runs."
+      />
 
-      <div className="mt-8">
-        <Form method="post" className="space-y-8 divide-y divide-gray-200">
-          <div className="space-y-8 divide-y divide-gray-200">
-            <div>
-              <div className="mt-6 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-6">
-                <div className="sm:col-span-3">
-                  <label
-                    htmlFor="flakeThreshold"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Flake Rate Threshold (%)
-                  </label>
-                  <div className="mt-1">
-                    <input
-                      type="number"
-                      name="flakeThreshold"
-                      id="flakeThreshold"
-                      min="0"
-                      max="100"
-                      value={flakeThreshold}
-                      onChange={(e) =>
-                        setFlakeThreshold(parseInt(e.target.value) || 0)
-                      }
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                    />
-                  </div>
-                  {actionData?.errors?.flakeThreshold && (
-                    <p className="mt-2 text-sm text-red-600">
-                      {actionData.errors.flakeThreshold}
-                    </p>
-                  )}
-                  <p className="mt-2 text-sm text-gray-500">
-                    Tests with a flake rate above this percentage will be
-                    automatically excluded.
+      <Card>
+        <CardHeader>
+          <CardTitle>Threshold Settings</CardTitle>
+          <CardDescription>
+            Tests that exceed these thresholds will be automatically excluded
+            from test runs.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <RemixForm method="post" className="space-y-6">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="flakeThreshold">Flake Rate Threshold (%)</Label>
+                <Input
+                  type="number"
+                  id="flakeThreshold"
+                  name="flakeThreshold"
+                  min="0"
+                  max="100"
+                  value={flakeThreshold}
+                  onChange={(e) =>
+                    setFlakeThreshold(parseInt(e.target.value) || 0)
+                  }
+                />
+                {actionData?.errors?.flakeThreshold && (
+                  <p className="text-destructive text-sm">
+                    {actionData.errors.flakeThreshold}
                   </p>
-                </div>
+                )}
+                <p className="text-muted-foreground text-[0.8rem]">
+                  Tests with a flake rate above this percentage will be
+                  automatically excluded.
+                </p>
+              </div>
 
-                <div className="sm:col-span-3">
-                  <label
-                    htmlFor="failureThreshold"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Failure Rate Threshold (%)
-                  </label>
-                  <div className="mt-1">
-                    <input
-                      type="number"
-                      name="failureThreshold"
-                      id="failureThreshold"
-                      min="0"
-                      max="100"
-                      value={failureThreshold}
-                      onChange={(e) =>
-                        setFailureThreshold(parseInt(e.target.value) || 0)
-                      }
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                    />
-                  </div>
-                  {actionData?.errors?.failureThreshold && (
-                    <p className="mt-2 text-sm text-red-600">
-                      {actionData.errors.failureThreshold}
-                    </p>
-                  )}
-                  <p className="mt-2 text-sm text-gray-500">
-                    Tests with a failure rate above this percentage will be
-                    automatically excluded.
+              <div className="space-y-2">
+                <Label htmlFor="failureThreshold">
+                  Failure Rate Threshold (%)
+                </Label>
+                <Input
+                  type="number"
+                  id="failureThreshold"
+                  name="failureThreshold"
+                  min="0"
+                  max="100"
+                  value={failureThreshold}
+                  onChange={(e) =>
+                    setFailureThreshold(parseInt(e.target.value) || 0)
+                  }
+                />
+                {actionData?.errors?.failureThreshold && (
+                  <p className="text-destructive text-sm">
+                    {actionData.errors.failureThreshold}
                   </p>
-                </div>
+                )}
+                <p className="text-muted-foreground text-[0.8rem]">
+                  Tests with a failure rate above this percentage will be
+                  automatically excluded.
+                </p>
               </div>
             </div>
-          </div>
 
-          <div className="pt-5">
-            <div className="flex justify-end">
-              <a
-                href="/"
-                className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-              >
-                Cancel
-              </a>
-              <button
-                type="submit"
-                className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-              >
-                Save
-              </button>
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" asChild>
+                <a href="/dashboard" className="flex items-center">
+                  <ChevronLeft className="mr-1 h-4 w-4" />
+                  Cancel
+                </a>
+              </Button>
+              <Button type="submit">
+                <Save className="mr-2 h-4 w-4" />
+                Save Changes
+              </Button>
             </div>
-          </div>
-        </Form>
-      </div>
+          </RemixForm>
+        </CardContent>
+      </Card>
     </div>
   );
 }

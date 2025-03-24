@@ -4,7 +4,7 @@ import { type Test } from "~/types/cypress";
 
 export async function loader() {
   // Redirect any direct visits to this page back to the dashboard
-  return redirect("/");
+  return redirect("/dashboard");
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {
@@ -27,5 +27,5 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
   await cypressService.toggleTestExclusion(testId, current === "excluded");
 
-  return redirect("/");
+  return redirect("/dashboard");
 }

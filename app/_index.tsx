@@ -4,4 +4,4 @@ export function loader() {
   return redirect("/dashboard");
 }
 
-// This file simply redirects to our dashboard under the layout
+// This file simply redirects to our dashboard
