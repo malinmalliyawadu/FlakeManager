@@ -24,23 +24,29 @@ import { toast } from "sonner";
 import { Save, ChevronLeft } from "lucide-react";
 import { PageHeader } from "~/components/page-header";
 import { Label } from "~/components/ui/label";
+import { getCypressService } from "~/services/cypress.server";
 
-// In a real app, these would be stored in a database or config file
-const DEFAULT_THRESHOLDS = {
-  flakeThreshold: 5,
-  failureThreshold: 10,
-};
+export async function loader({ request }: LoaderFunctionArgs) {
+  const cypressService = getCypressService();
+  const url = new URL(request.url);
+  const selectedRepo = url.searchParams.get("repo") || "demo-repo";
 
-// Mock thresholds for now
-let currentThresholds = { ...DEFAULT_THRESHOLDS };
+  const repository = await cypressService.getRepository(selectedRepo);
+  if (!repository) {
+    throw new Response("Repository not found", { status: 404 });
+  }
 
-export async function loader() {
-  return json({ thresholds: currentThresholds });
+  return json({
+    repository,
+    selectedRepo,
+  });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
+  const cypressService = getCypressService();
 
+  const repoId = formData.get("repoId") as string;
   const flakeThreshold = parseInt(formData.get("flakeThreshold") as string, 10);
   const failureThreshold = parseInt(
     formData.get("failureThreshold") as string,
@@ -67,30 +73,31 @@ export async function action({ request }: ActionFunctionArgs) {
     return json({ errors, values: { flakeThreshold, failureThreshold } });
   }
 
-  // Update thresholds (in a real app, this would save to a database)
-  currentThresholds = {
+  // Update the repository thresholds
+  await cypressService.updateRepositoryThresholds(
+    repoId,
     flakeThreshold,
     failureThreshold,
-  };
+  );
 
-  return redirect("/dashboard");
+  return redirect(`/dashboard?repo=${repoId}`);
 }
 
 export default function ThresholdsPage() {
-  const { thresholds } = useLoaderData<typeof loader>();
+  const { repository, selectedRepo } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
 
   const [flakeThreshold, setFlakeThreshold] = useState(
-    actionData?.values?.flakeThreshold ?? thresholds.flakeThreshold,
+    actionData?.values?.flakeThreshold ?? repository.flakeThreshold,
   );
   const [failureThreshold, setFailureThreshold] = useState(
-    actionData?.values?.failureThreshold ?? thresholds.failureThreshold,
+    actionData?.values?.failureThreshold ?? repository.failureThreshold,
   );
 
   return (
     <div className="space-y-8">
       <PageHeader
-        title="Configure Thresholds"
+        title={`Configure Thresholds: ${repository.name}`}
         description="Set thresholds for when tests should be automatically excluded from test runs."
       />
 
@@ -104,6 +111,7 @@ export default function ThresholdsPage() {
         </CardHeader>
         <CardContent>
           <RemixForm method="post" className="space-y-6">
+            <input type="hidden" name="repoId" value={selectedRepo} />
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="flakeThreshold">Flake Rate Threshold (%)</Label>
@@ -158,7 +166,10 @@ export default function ThresholdsPage() {
 
             <div className="flex justify-end space-x-2">
               <Button variant="outline" asChild>
-                <a href="/dashboard" className="flex items-center">
+                <a
+                  href={`/dashboard?repo=${selectedRepo}`}
+                  className="flex items-center"
+                >
                   <ChevronLeft className="mr-1 h-4 w-4" />
                   Cancel
                 </a>

@@ -1,7 +1,7 @@
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { getCypressService } from "~/services/cypress.server";
-import { type Test } from "~/types/cypress";
+import { type Repository, type Test } from "~/types/cypress";
 import {
   Card,
   CardContent,
@@ -24,10 +24,15 @@ import { PageHeader } from "~/components/page-header";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const cypressService = getCypressService();
-  const repo = "demo-repo"; // This would come from the query params in a real app
-  const tests = await cypressService.getTestsForRepo(repo);
+  const url = new URL(request.url);
+  const selectedRepo = url.searchParams.get("repo") || "demo-repo";
+
+  const repository = await cypressService.getRepository(selectedRepo);
+  const tests = await cypressService.getTestsForRepo(selectedRepo);
 
   return json({
+    repository,
+    selectedRepo,
     tests,
     counts: {
       total: tests.length,
@@ -38,16 +43,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function Dashboard() {
-  const { tests, counts } = useLoaderData<typeof loader>();
+  const { repository, tests, counts, selectedRepo } =
+    useLoaderData<typeof loader>();
 
   return (
     <div className="space-y-8">
       <PageHeader
-        title="Flake Manager Dashboard"
-        description="Monitor and manage flaky tests in your Cypress test suite."
+        title={`${repository?.name || "Dashboard"}`}
+        description={`Monitor and manage flaky tests in ${repository?.description || "your Cypress test suite"}.`}
       >
         <Button asChild>
-          <Link to="/thresholds">
+          <Link to={`/thresholds?repo=${selectedRepo}`}>
             Configure Thresholds
             <ChevronRight className="ml-2 h-4 w-4" />
           </Link>
@@ -89,6 +95,31 @@ export default function Dashboard() {
         </Card>
       </div>
 
+      <Card>
+        <CardHeader>
+          <CardTitle>Current Thresholds</CardTitle>
+          <CardDescription>
+            Tests that exceed these thresholds are automatically excluded
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <div className="mb-1 text-sm font-medium">Flake Threshold</div>
+              <div className="text-2xl font-semibold">
+                {repository?.flakeThreshold || 5}%
+              </div>
+            </div>
+            <div>
+              <div className="mb-1 text-sm font-medium">Failure Threshold</div>
+              <div className="text-2xl font-semibold">
+                {repository?.failureThreshold || 10}%
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <div>
         <h2 className="mb-4 text-xl font-bold tracking-tight">Test Status</h2>
         <Card>
@@ -113,7 +144,7 @@ export default function Dashboard() {
                     </TableCell>
                     <TableCell
                       className={
-                        test.flakeRate > 5
+                        test.flakeRate > (repository?.flakeThreshold || 5)
                           ? "text-destructive"
                           : "text-muted-foreground"
                       }
@@ -122,7 +153,7 @@ export default function Dashboard() {
                     </TableCell>
                     <TableCell
                       className={
-                        test.failureRate > 10
+                        test.failureRate > (repository?.failureThreshold || 10)
                           ? "text-destructive"
                           : "text-muted-foreground"
                       }
@@ -139,7 +170,7 @@ export default function Dashboard() {
                     <TableCell className="text-right">
                       <Button variant="ghost" size="sm" asChild>
                         <Link
-                          to={`/toggle/${test.id}?current=${test.excluded ? "excluded" : "included"}`}
+                          to={`/toggle/${test.id}?current=${test.excluded ? "excluded" : "included"}&repo=${selectedRepo}`}
                         >
                           {test.excluded ? (
                             <>

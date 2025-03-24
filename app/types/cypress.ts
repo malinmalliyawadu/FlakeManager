@@ -7,6 +7,15 @@ export interface Test {
   excluded: boolean;
 }
 
+export interface Repository {
+  id: string;
+  name: string;
+  description: string;
+  testCount: number;
+  flakeThreshold: number;
+  failureThreshold: number;
+}
+
 export interface ApiResponse {
   status: "success" | "error";
   data?: Test[];

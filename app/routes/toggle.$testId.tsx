@@ -2,14 +2,17 @@ import { redirect, type ActionFunctionArgs, json } from "@remix-run/node";
 import { getCypressService } from "~/services/cypress.server";
 import { type Test } from "~/types/cypress";
 
-export async function loader() {
+export async function loader({ request }: ActionFunctionArgs) {
   // Redirect any direct visits to this page back to the dashboard
-  return redirect("/dashboard");
+  const url = new URL(request.url);
+  const repo = url.searchParams.get("repo") || "demo-repo";
+  return redirect(`/dashboard?repo=${repo}`);
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {
   const url = new URL(request.url);
   const current = url.searchParams.get("current");
+  const repo = url.searchParams.get("repo") || "demo-repo";
 
   const testId = params.testId;
 
@@ -18,14 +21,18 @@ export async function action({ params, request }: ActionFunctionArgs) {
   }
 
   const cypressService = getCypressService();
-  const tests = await cypressService.getTestsForRepo("demo/repo");
+  const tests = await cypressService.getTestsForRepo(repo);
   const test = tests.find((t: Test) => t.id === testId);
 
   if (!test) {
     return new Response("Test not found", { status: 404 });
   }
 
-  await cypressService.toggleTestExclusion(testId, current === "excluded");
+  await cypressService.toggleTestExclusion(
+    testId,
+    current === "excluded",
+    repo,
+  );
 
-  return redirect("/dashboard");
+  return redirect(`/dashboard?repo=${repo}`);
 }

@@ -1,5 +1,9 @@
 import { cssBundleHref } from "@remix-run/css-bundle";
-import type { LinksFunction } from "@remix-run/node";
+import {
+  json,
+  type LinksFunction,
+  type LoaderFunctionArgs,
+} from "@remix-run/node";
 import {
   Links,
   LiveReload,
@@ -8,10 +12,28 @@ import {
   Scripts,
   ScrollRestoration,
   Link,
+  Form,
+  useLoaderData,
+  useNavigate,
+  useSearchParams,
 } from "@remix-run/react";
 import { Toaster } from "sonner";
 import { Button } from "~/components/ui/button";
-import { ExternalLink, LayoutDashboard, Settings } from "lucide-react";
+import {
+  Database,
+  ExternalLink,
+  LayoutDashboard,
+  Settings,
+} from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import { getCypressService } from "~/services/cypress.server";
+import { type Repository } from "~/types/cypress";
 
 import stylesheet from "~/tailwind.css";
 
@@ -20,7 +42,37 @@ export const links: LinksFunction = () => [
   ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
 ];
 
+export async function loader({ request }: LoaderFunctionArgs) {
+  const cypressService = getCypressService();
+  const repositories = await cypressService.getRepositories();
+
+  const url = new URL(request.url);
+  const selectedRepo = url.searchParams.get("repo") || "demo-repo";
+
+  const repository = await cypressService.getRepository(selectedRepo);
+
+  return json({
+    repositories,
+    selectedRepo,
+    repository,
+  });
+}
+
 export default function App() {
+  const { repositories, selectedRepo, repository } =
+    useLoaderData<typeof loader>();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  const handleRepoChange = (value: string) => {
+    // Create a new URLSearchParams instance from the current ones
+    const newParams = new URLSearchParams(searchParams);
+    // Update the repo parameter
+    newParams.set("repo", value);
+    // Navigate to the current path with updated search params
+    navigate(`${window.location.pathname}?${newParams.toString()}`);
+  };
+
   return (
     <html lang="en" className="h-full antialiased">
       <head>
@@ -45,14 +97,14 @@ export default function App() {
                 </Link>
                 <nav className="flex items-center gap-6 text-sm">
                   <Link
-                    to="/dashboard"
+                    to={`/dashboard?repo=${selectedRepo}`}
                     className="text-muted-foreground hover:text-primary flex items-center gap-1 text-sm font-medium transition-colors"
                   >
                     <LayoutDashboard className="h-4 w-4" />
                     <span>Dashboard</span>
                   </Link>
                   <Link
-                    to="/thresholds"
+                    to={`/thresholds?repo=${selectedRepo}`}
                     className="text-muted-foreground hover:text-primary flex items-center gap-1 text-sm font-medium transition-colors"
                   >
                     <Settings className="h-4 w-4" />
@@ -60,7 +112,29 @@ export default function App() {
                   </Link>
                 </nav>
               </div>
-              <div className="ml-auto flex items-center gap-2">
+              <div className="ml-auto flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <Select
+                    defaultValue={selectedRepo}
+                    onValueChange={handleRepoChange}
+                  >
+                    <SelectTrigger className="w-[240px]">
+                      <Database className="mr-2 h-4 w-4" />
+                      <SelectValue placeholder="Select repository" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {repositories.map((repo: Repository) => (
+                        <SelectItem key={repo.id} value={repo.id}>
+                          <div className="flex items-center">
+                            <span>
+                              {repo.name} ({repo.testCount} tests)
+                            </span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
                 <Button variant="outline" size="sm" asChild>
                   <a
                     href="https://docs.cypress.io"
