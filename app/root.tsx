@@ -110,8 +110,7 @@ function GithubPagesRouter() {
 }
 
 export default function App() {
-  const { repositories, selectedRepo, repository } =
-    useLoaderData<typeof loader>();
+  const { repositories, selectedRepo } = useLoaderData<typeof loader>();
 
   return (
     <html lang="en" className="h-full antialiased">

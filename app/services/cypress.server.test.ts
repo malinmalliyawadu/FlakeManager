@@ -1,6 +1,6 @@
-import { describe, test, expect, beforeEach, vi } from "vitest";
+import { describe, test, expect, beforeEach } from "vitest";
+
 import { CypressService, getCypressService } from "./cypress.server";
-import { type Repository, type Test } from "~/types/cypress";
 
 describe("CypressService", () => {
   let cypressService: CypressService;
@@ -230,7 +230,7 @@ describe("CypressService", () => {
 
   test("getCypressService accepts custom config for first initialization", () => {
     // Reset the singleton for this test
-    // @ts-ignore - accessing private property for testing
+    // @ts-expect-error - accessing private property for testing
     globalThis.cypressService = null;
 
     const customConfig = {
