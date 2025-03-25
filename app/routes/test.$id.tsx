@@ -43,18 +43,21 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   }
 
   const repository = await cypressService.getRepository(repo);
-  const jiraTicket = await jiraService.getTicket(testId);
+  let jiraTicket = null;
+  if (test.jiraTicket?.id) {
+    jiraTicket = await jiraService.getTicket(testId);
+  }
 
   return json({
     test,
-    repository,
     repo,
     jiraTicket,
+    repository,
   });
 }
 
 export default function TestDetails() {
-  const { test, repository, repo, jiraTicket } = useLoaderData<typeof loader>();
+  const { test, repo, jiraTicket, repository } = useLoaderData<typeof loader>();
   const [isCreateTicketOpen, setIsCreateTicketOpen] = useState(false);
 
   const isAboveFlakeThreshold =
@@ -260,6 +263,7 @@ export default function TestDetails() {
         onOpenChange={setIsCreateTicketOpen}
         test={test}
         repositoryId={repo}
+        defaultBoard={repository?.defaultJiraBoard}
       />
     </div>
   );

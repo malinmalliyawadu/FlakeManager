@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Form, useSubmit, useLocation } from "@remix-run/react";
 import { z } from "zod";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Textarea } from "~/components/ui/textarea";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -22,42 +22,73 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { type Test } from "~/types/cypress";
+import { type JiraBoard } from "~/services/jira.server";
 
 interface CreateTicketSheetProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   test: Test | null;
   repositoryId: string;
+  defaultBoard?: string;
 }
-
-// Sample Jira boards for the demo
-const JIRA_BOARDS = [
-  { id: "FLAKE", name: "Flaky Tests" },
-  { id: "BUG", name: "Bugs" },
-  { id: "TECH", name: "Tech Debt" },
-  { id: "QA", name: "QA Tasks" },
-];
 
 export function CreateTicketSheet({
   isOpen,
   onOpenChange,
   test,
   repositoryId,
+  defaultBoard,
 }: CreateTicketSheetProps) {
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
-  const [selectedBoard, setSelectedBoard] = useState(JIRA_BOARDS[0].id);
+  const [selectedBoard, setSelectedBoard] = useState(defaultBoard || "");
+  const [boards, setBoards] = useState<JiraBoard[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const submit = useSubmit();
   const location = useLocation();
+
+  // Fetch JIRA boards when the component mounts
+  useEffect(() => {
+    async function fetchBoards() {
+      setIsLoading(true);
+      try {
+        const response = await fetch("/repositories");
+        if (!response.ok) throw new Error("Failed to fetch boards");
+        const data = await response.json();
+        setBoards(data.boards || []);
+
+        // Set the selected board to the default board from the repository if available
+        if (!selectedBoard && defaultBoard) {
+          setSelectedBoard(defaultBoard);
+        } else if (!selectedBoard && data.boards?.length > 0) {
+          setSelectedBoard(data.boards[0].key);
+        }
+      } catch (error) {
+        console.error("Error fetching JIRA boards:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    if (isOpen) {
+      fetchBoards();
+    }
+  }, [isOpen, defaultBoard, selectedBoard]);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
 
-    // Add the current URL as the returnTo parameter
-    formData.append("returnTo", location.pathname + location.search);
-
-    const data = Object.fromEntries(formData.entries());
+    // Convert form to JSON for the API
+    const jsonData = {
+      testId: test?.id,
+      repository: repositoryId,
+      board: selectedBoard,
+      summary: formData.get("summary"),
+      description: formData.get("description"),
+      isManualCreation: true,
+      returnTo: location.pathname + location.search,
+    };
 
     // Basic validation
     const schema = z.object({
@@ -69,16 +100,41 @@ export function CreateTicketSheet({
     });
 
     try {
-      schema.parse(data);
+      schema.parse({
+        summary: jsonData.summary,
+        description: jsonData.description,
+        board: jsonData.board,
+      });
 
       // Clear errors before submitting
       setFormErrors({});
 
-      // Submit form data
-      submit(formData, { method: "post", action: "/api/create-jira-ticket" });
-
-      // Close the sheet after submission
-      onOpenChange(false);
+      // Submit JSON data
+      fetch("/api/create-jira-ticket", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(jsonData),
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Failed to create ticket");
+          }
+          return response.json();
+        })
+        .then(() => {
+          // Close the sheet after successful submission
+          onOpenChange(false);
+          // Reload the page to show the new ticket
+          window.location.reload();
+        })
+        .catch((error) => {
+          console.error("Error creating ticket:", error);
+          setFormErrors({
+            submit: "Failed to create ticket. Please try again.",
+          });
+        });
     } catch (error) {
       if (error instanceof z.ZodError) {
         const errors: Record<string, string> = {};
@@ -104,15 +160,7 @@ export function CreateTicketSheet({
           </SheetDescription>
         </SheetHeader>
 
-        <Form
-          method="post"
-          action="/api/create-jira-ticket"
-          onSubmit={handleSubmit}
-          className="space-y-6 py-4"
-        >
-          <input type="hidden" name="testId" value={test.id} />
-          <input type="hidden" name="repo" value={repositoryId} />
-
+        <Form method="post" onSubmit={handleSubmit} className="space-y-6 py-4">
           <div className="space-y-2">
             <div className="font-medium">Test Details</div>
             <div className="rounded-md bg-secondary/50 p-3">
@@ -131,22 +179,29 @@ export function CreateTicketSheet({
 
           <div className="space-y-2">
             <Label htmlFor="board">Jira Board</Label>
-            <Select
-              name="board"
-              defaultValue={selectedBoard}
-              onValueChange={setSelectedBoard}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a board" />
-              </SelectTrigger>
-              <SelectContent>
-                {JIRA_BOARDS.map((board) => (
-                  <SelectItem key={board.id} value={board.id}>
-                    {board.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {isLoading ? (
+              <div className="flex items-center gap-2 py-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span className="text-sm">Loading boards...</span>
+              </div>
+            ) : (
+              <Select
+                name="board"
+                value={selectedBoard}
+                onValueChange={setSelectedBoard}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a board" />
+                </SelectTrigger>
+                <SelectContent>
+                  {boards.map((board) => (
+                    <SelectItem key={board.key} value={board.key}>
+                      {board.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
             {formErrors.board && (
               <p className="mt-1 flex items-center gap-1 text-sm text-red-500">
                 <AlertCircle className="h-4 w-4" />
@@ -160,7 +215,7 @@ export function CreateTicketSheet({
             <Input
               id="summary"
               name="summary"
-              defaultValue={`[${selectedBoard}] Fix test: ${test.name}`}
+              defaultValue={`[${selectedBoard || "JIRA"}] Fix test: ${test.name}`}
               placeholder="Enter a concise summary"
               required
             />
@@ -184,7 +239,7 @@ Test details:
 - File: ${test.file}
 - Flake Rate: ${test.flakeRate}%
 - Failure Rate: ${test.failureRate}%
-- Board: ${selectedBoard}`}
+- Board: ${selectedBoard || "JIRA"}`}
               placeholder="Describe the issue and provide context"
               required
             />
@@ -196,8 +251,19 @@ Test details:
             )}
           </div>
 
+          {formErrors.submit && (
+            <p className="flex items-center gap-1 text-sm text-red-500">
+              <AlertCircle className="h-4 w-4" />
+              {formErrors.submit}
+            </p>
+          )}
+
           <SheetFooter className="pt-4">
-            <Button type="submit" className="w-full">
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isLoading || !selectedBoard}
+            >
               Create Jira Ticket
             </Button>
           </SheetFooter>

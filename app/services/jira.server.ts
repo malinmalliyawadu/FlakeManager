@@ -16,6 +16,13 @@ interface JiraTicket {
   url: string;
 }
 
+export interface JiraBoard {
+  id: string;
+  key: string;
+  name: string;
+  description?: string;
+}
+
 // Default values for a static setup
 const defaultConfig: JiraConfig = {
   apiUrl: "https://your-domain.atlassian.net/rest/api/3",
@@ -23,6 +30,17 @@ const defaultConfig: JiraConfig = {
   username: "jira_user@example.com",
   apiToken: "your_api_token", // In production, this should be loaded from environment variables
 };
+
+// Sample boards for development purposes
+const sampleBoards: JiraBoard[] = [
+  { id: "1", key: "FLAKE", name: "Flaky Tests" },
+  { id: "2", key: "BUG", name: "Bug Tracking" },
+  { id: "3", key: "FRONTEND", name: "Frontend Development" },
+  { id: "4", key: "BACKEND", name: "Backend Development" },
+  { id: "5", key: "API", name: "API Development" },
+  { id: "6", key: "ADMIN", name: "Admin Portal" },
+  { id: "7", key: "QA", name: "Quality Assurance" },
+];
 
 // Mock data for development purposes
 const sampleTickets: Record<string, JiraTicket> = {
@@ -49,6 +67,11 @@ export class JiraService {
 
   constructor(config: Partial<JiraConfig> = {}) {
     this.config = { ...defaultConfig, ...config };
+  }
+
+  async getBoards(): Promise<JiraBoard[]> {
+    // In a real implementation, this would make an API call to Jira
+    return sampleBoards;
   }
 
   async getTicket(testId: string): Promise<JiraTicket | null> {

@@ -39,6 +39,7 @@ export function AppHeader({
 
   const isDashboardActive = isActive("/dashboard");
   const isThresholdsActive = isActive("/thresholds");
+  const isRepositoriesActive = isActive("/repositories");
 
   const handleRepoChange = (value: string) => {
     // Create a new URLSearchParams instance from the current ones
@@ -50,7 +51,7 @@ export function AppHeader({
   };
 
   return (
-    <header className="via-background sticky top-0 z-10 border-b bg-gradient-to-r from-blue-50/70 to-cyan-50/70 backdrop-blur supports-[backdrop-filter]:bg-opacity-80 dark:border-slate-800 dark:from-slate-950/90 dark:to-slate-900/90">
+    <header className="sticky top-0 z-10 border-b bg-gradient-to-r from-blue-50/70 via-background to-cyan-50/70 backdrop-blur supports-[backdrop-filter]:bg-opacity-80 dark:border-slate-800 dark:from-slate-950/90 dark:to-slate-900/90">
       <div className="mx-auto max-w-screen-lg px-4 py-3 md:px-8">
         <div className="flex h-16 items-center">
           <div className="mr-4 flex items-center">
@@ -65,7 +66,7 @@ export function AppHeader({
                 <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-xl font-extrabold leading-none tracking-tight text-transparent dark:from-blue-400 dark:to-cyan-300">
                   Flake Manager
                 </span>
-                <span className="text-muted-foreground mt-1 text-[10px] font-medium tracking-wide">
+                <span className="mt-1 text-[10px] font-medium tracking-wide text-muted-foreground">
                   CYPRESS SUITE MANAGEMENT
                 </span>
               </div>
@@ -142,6 +143,44 @@ export function AppHeader({
                   className={cn(
                     "h-[2px] w-full rounded-full bg-blue-500 transition-transform duration-200 dark:bg-blue-400",
                     isThresholdsActive
+                      ? "scale-100"
+                      : "scale-0 group-hover:scale-100",
+                  )}
+                />
+              </Link>
+              <Link
+                to="/repositories"
+                className={cn(
+                  "group flex flex-col items-center gap-1.5 pt-1",
+                  isRepositoriesActive && "pointer-events-none",
+                )}
+              >
+                <div
+                  className={cn(
+                    "flex h-8 w-8 items-center justify-center rounded-full p-1.5 transition-all duration-200",
+                    isRepositoriesActive
+                      ? "bg-blue-100 text-blue-700 shadow-sm dark:bg-blue-900/40 dark:text-blue-400"
+                      : "bg-blue-100/50 text-blue-600 group-hover:bg-blue-100 group-hover:text-blue-700 dark:bg-blue-900/20 dark:text-blue-500 dark:group-hover:bg-blue-900/40 dark:group-hover:text-blue-400",
+                  )}
+                >
+                  <Database className="h-full w-full" />
+                </div>
+                <span
+                  className={cn(
+                    "w-20 text-center text-xs font-medium transition-colors",
+                    isRepositoriesActive
+                      ? "text-blue-600 dark:text-blue-400"
+                      : "text-muted-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400",
+                  )}
+                >
+                  <span className={isRepositoriesActive ? "font-semibold" : ""}>
+                    Repositories
+                  </span>
+                </span>
+                <div
+                  className={cn(
+                    "h-[2px] w-full rounded-full bg-blue-500 transition-transform duration-200 dark:bg-blue-400",
+                    isRepositoriesActive
                       ? "scale-100"
                       : "scale-0 group-hover:scale-100",
                   )}

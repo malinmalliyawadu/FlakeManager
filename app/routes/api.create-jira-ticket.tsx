@@ -1,4 +1,4 @@
-import { json, redirect, type ActionFunctionArgs } from "@remix-run/node";
+import { json, type ActionFunctionArgs } from "@remix-run/node";
 import { z } from "zod";
 import { getCypressService } from "~/services/cypress.server";
 import { getJiraService } from "~/services/jira.server";
@@ -14,62 +14,62 @@ const ticketSchema = z.object({
 });
 
 export async function action({ request }: ActionFunctionArgs) {
-  const formData = await request.formData();
-  const data = Object.fromEntries(formData);
+  const jiraService = getJiraService();
+  const cypressService = getCypressService();
 
   try {
-    const validatedData = ticketSchema.parse(data);
+    const {
+      testId,
+      repository,
+      summary,
+      description,
+      board,
+      isManualCreation,
+      returnTo,
+    } = await request.json();
 
-    const cypressService = getCypressService();
-    const jiraService = getJiraService();
-
-    // Get the test to create a ticket for
-    const tests = await cypressService.getTestsForRepo(validatedData.repo);
-    const test = tests.find((t) => t.id === validatedData.testId);
-
-    if (!test) {
-      return json({ success: false, error: "Test not found" }, { status: 404 });
-    }
-
-    // Create the Jira ticket
-    const ticket = await jiraService.createTicket(test, validatedData.repo, {
-      board: validatedData.board,
-      summary: validatedData.summary,
-      description: validatedData.description,
-      isManualCreation: true,
-    });
-
-    // In a real implementation, we would update the test record with the Jira ticket details
-    test.jiraTicket = {
-      id: ticket.id,
-      key: ticket.key,
-      url: ticket.url,
-    };
-
-    // If there's a returnTo URL provided, redirect there
-    if (validatedData.returnTo) {
-      return redirect(validatedData.returnTo);
-    }
-
-    // Otherwise return success JSON
-    return json({ success: true, ticket });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
+    if (!testId || !repository) {
       return json(
         {
-          success: false,
-          errors: error.flatten().fieldErrors,
+          error: "Missing required fields: testId and repository are required",
         },
         { status: 400 },
       );
     }
 
-    return json(
-      {
-        success: false,
-        error: "Failed to create Jira ticket",
-      },
-      { status: 500 },
-    );
+    // Get the test details
+    const tests = await cypressService.getTestsForRepo(repository);
+    const test = tests.find((t) => t.id === testId);
+
+    if (!test) {
+      return json(
+        {
+          error: `Test with ID ${testId} not found in repository ${repository}`,
+        },
+        { status: 404 },
+      );
+    }
+
+    // Get repository details to fetch default JIRA board if needed
+    const repo = await cypressService.getRepository(repository);
+    const boardToUse = board || repo?.defaultJiraBoard || undefined;
+
+    // Create a JIRA ticket for the test
+    const ticket = await jiraService.createTicket(test, repository, {
+      board: boardToUse,
+      summary,
+      description,
+      isManualCreation: isManualCreation === true,
+    });
+
+    // If there's a returnTo URL provided, redirect there
+    if (returnTo) {
+      return Response.redirect(returnTo);
+    }
+
+    return json({ ticket });
+  } catch (error) {
+    console.error("Error creating JIRA ticket:", error);
+    return json({ error: "Failed to create JIRA ticket" }, { status: 500 });
   }
 }

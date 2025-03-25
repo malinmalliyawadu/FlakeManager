@@ -22,6 +22,7 @@ const sampleRepositories: Repository[] = [
     testCount: 48,
     flakeThreshold: 3,
     failureThreshold: 8,
+    defaultJiraBoard: "FRONTEND",
   },
   {
     id: "admin-portal",
@@ -30,6 +31,7 @@ const sampleRepositories: Repository[] = [
     testCount: 32,
     flakeThreshold: 6,
     failureThreshold: 12,
+    defaultJiraBoard: "ADMIN",
   },
   {
     id: "api-service",
@@ -38,6 +40,7 @@ const sampleRepositories: Repository[] = [
     testCount: 75,
     flakeThreshold: 4,
     failureThreshold: 9,
+    defaultJiraBoard: "API",
   },
   {
     id: "mobile-app",
@@ -54,6 +57,7 @@ const sampleRepositories: Repository[] = [
     testCount: 8,
     flakeThreshold: 5,
     failureThreshold: 10,
+    defaultJiraBoard: "FLAKE",
   },
 ];
 
@@ -252,18 +256,52 @@ export class CypressService {
     flakeThreshold: number,
     failureThreshold: number,
   ): Promise<Repository | null> {
-    // Find the repository in our sample data
+    // In a real app, this would update the repository in a database or API
     const repoIndex = sampleRepositories.findIndex((r) => r.id === repoId);
-
     if (repoIndex === -1) {
       return null;
     }
 
-    // Update the thresholds
     sampleRepositories[repoIndex] = {
       ...sampleRepositories[repoIndex],
       flakeThreshold,
       failureThreshold,
+    };
+
+    return sampleRepositories[repoIndex];
+  }
+
+  async updateRepositoryJiraBoard(
+    repoId: string,
+    defaultJiraBoard: string,
+  ): Promise<Repository | null> {
+    // In a real app, this would update the repository in a database or API
+    const repoIndex = sampleRepositories.findIndex((r) => r.id === repoId);
+    if (repoIndex === -1) {
+      return null;
+    }
+
+    sampleRepositories[repoIndex] = {
+      ...sampleRepositories[repoIndex],
+      defaultJiraBoard,
+    };
+
+    return sampleRepositories[repoIndex];
+  }
+
+  async updateRepository(
+    repoId: string,
+    updates: Partial<Omit<Repository, "id">>,
+  ): Promise<Repository | null> {
+    // In a real app, this would update the repository in a database or API
+    const repoIndex = sampleRepositories.findIndex((r) => r.id === repoId);
+    if (repoIndex === -1) {
+      return null;
+    }
+
+    sampleRepositories[repoIndex] = {
+      ...sampleRepositories[repoIndex],
+      ...updates,
     };
 
     return sampleRepositories[repoIndex];

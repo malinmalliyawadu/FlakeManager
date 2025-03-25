@@ -20,6 +20,7 @@ export interface Repository {
   testCount: number;
   flakeThreshold: number;
   failureThreshold: number;
+  defaultJiraBoard?: string;
 }
 
 export interface ApiResponse {
