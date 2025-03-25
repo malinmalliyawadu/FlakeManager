@@ -49,7 +49,7 @@ export function AppHeader({ repositories, selectedRepo }: AppHeaderProps) {
 
   return (
     <header className="sticky top-0 z-10 border-b bg-gradient-to-r from-blue-50/70 via-background to-cyan-50/70 backdrop-blur supports-[backdrop-filter]:bg-opacity-80 dark:border-slate-800 dark:from-slate-950/90 dark:to-slate-900/90">
-      <div className="mx-auto max-w-screen-xl px-4 py-3 md:px-8">
+      <div className="mx-auto max-w-screen-xl px-4 pt-1 md:px-8">
         <div className="flex h-16 items-center">
           <div className="mr-4 flex items-center">
             <Link
