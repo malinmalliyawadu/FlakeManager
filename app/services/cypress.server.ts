@@ -158,6 +158,11 @@ const repoTestData: Record<string, Test[]> = {
       // Auto-excluded due to exceeding flake threshold (12 > 5)
       excluded: true,
       manualOverride: false,
+      jiraTicket: {
+        id: "10001",
+        key: "FLAKE-1",
+        url: "https://your-domain.atlassian.net/browse/FLAKE-1",
+      },
     },
     {
       id: "5",
@@ -168,6 +173,11 @@ const repoTestData: Record<string, Test[]> = {
       // Auto-excluded due to exceeding failure threshold (15 > 10)
       excluded: true,
       manualOverride: false,
+      jiraTicket: {
+        id: "10002",
+        key: "FLAKE-2",
+        url: "https://your-domain.atlassian.net/browse/FLAKE-2",
+      },
     },
     {
       id: "6",

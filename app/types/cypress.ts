@@ -6,6 +6,11 @@ export interface Test {
   failureRate: number;
   excluded: boolean;
   manualOverride?: boolean;
+  jiraTicket?: {
+    id: string;
+    key: string;
+    url: string;
+  };
 }
 
 export interface Repository {

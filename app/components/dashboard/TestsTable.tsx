@@ -11,7 +11,15 @@ import {
 } from "~/components/ui/table";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { ToggleLeft, ToggleRight, Eye, EyeOff, HandMetal } from "lucide-react";
+import {
+  ToggleLeft,
+  ToggleRight,
+  Eye,
+  EyeOff,
+  HandMetal,
+  Ticket,
+  ExternalLink,
+} from "lucide-react";
 import {
   Card,
   CardContent,
@@ -73,7 +81,7 @@ export function TestsTable({
               </>
             )}
           </Button>
-          <div className="text-muted-foreground text-sm">
+          <div className="text-sm text-muted-foreground">
             Showing {filteredTests.length} of {tests.length} tests
           </div>
         </div>
@@ -104,7 +112,12 @@ export function TestsTable({
                   >
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
-                        {test.name}
+                        <Link
+                          to={`/test/${test.id}?repo=${selectedRepo}`}
+                          className="hover:text-primary hover:underline"
+                        >
+                          {test.name}
+                        </Link>
                         {test.manualOverride && (
                           <TooltipProvider>
                             <Tooltip>
@@ -148,28 +161,74 @@ export function TestsTable({
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        asChild
-                        className="hover:bg-muted/50"
-                      >
-                        <Link
-                          to={`/toggle/${test.id}?current=${test.excluded ? "excluded" : "included"}&repo=${selectedRepo}`}
+                      <div className="flex items-center justify-end space-x-2">
+                        {test.jiraTicket ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex items-center gap-1 text-blue-600 dark:text-blue-400"
+                            asChild
+                          >
+                            <a
+                              href={test.jiraTicket.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <ExternalLink className="h-3 w-3" />
+                              {test.jiraTicket.key}
+                            </a>
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            asChild
+                            className={
+                              test.flakeRate >
+                                (repository?.flakeThreshold || 5) ||
+                              test.failureRate >
+                                (repository?.failureThreshold || 10)
+                                ? "text-yellow-600 dark:text-yellow-400"
+                                : ""
+                            }
+                          >
+                            <Link
+                              to={`/create-jira-ticket?testId=${test.id}&testName=${encodeURIComponent(test.name)}&repo=${selectedRepo}`}
+                            >
+                              <Ticket className="mr-1 h-4 w-4" />
+                              {test.flakeRate >
+                                (repository?.flakeThreshold || 5) ||
+                              test.failureRate >
+                                (repository?.failureThreshold || 10)
+                                ? "Create Ticket (Needed)"
+                                : "Create Ticket"}
+                            </Link>
+                          </Button>
+                        )}
+
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          asChild
+                          className="hover:bg-muted/50"
                         >
-                          {test.excluded ? (
-                            <>
-                              <ToggleRight className="mr-2 h-4 w-4" />
-                              Include
-                            </>
-                          ) : (
-                            <>
-                              <ToggleLeft className="mr-2 h-4 w-4" />
-                              Exclude
-                            </>
-                          )}
-                        </Link>
-                      </Button>
+                          <Link
+                            to={`/toggle/${test.id}?current=${test.excluded ? "excluded" : "included"}&repo=${selectedRepo}`}
+                          >
+                            {test.excluded ? (
+                              <>
+                                <ToggleRight className="mr-2 h-4 w-4" />
+                                Include
+                              </>
+                            ) : (
+                              <>
+                                <ToggleLeft className="mr-2 h-4 w-4" />
+                                Exclude
+                              </>
+                            )}
+                          </Link>
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 );
@@ -203,7 +262,7 @@ function FlakeRateBadge({
         {rate}%
       </div>
       {isExceeded && (
-        <span className="text-muted-foreground ml-2 text-xs">
+        <span className="ml-2 text-xs text-muted-foreground">
           (&gt;{threshold}%)
         </span>
       )}
@@ -232,7 +291,7 @@ function FailureRateBadge({
         {rate}%
       </div>
       {isExceeded && (
-        <span className="text-muted-foreground ml-2 text-xs">
+        <span className="ml-2 text-xs text-muted-foreground">
           (&gt;{threshold}%)
         </span>
       )}
