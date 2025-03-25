@@ -89,7 +89,7 @@ export default function App() {
         <Links />
         <ThemePreload />
       </head>
-      <body className="bg-background h-full">
+      <body className="h-full bg-background">
         <ThemeProvider defaultTheme="system" storageKey="flake-manager-theme">
           <div className="flex min-h-screen flex-col">
             <AppHeader
@@ -98,8 +98,8 @@ export default function App() {
               repository={repository}
             />
 
-            <main className="bg-background flex-1">
-              <div className="mx-auto max-w-screen-lg px-4 py-8 md:px-8">
+            <main className="flex-1 bg-background">
+              <div className="mx-auto max-w-screen-xl px-4 py-8 md:px-8">
                 <Outlet />
               </div>
             </main>

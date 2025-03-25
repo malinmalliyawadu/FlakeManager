@@ -147,7 +147,12 @@ export default function Repositories() {
                   <TableRow key={repo.id} className="hover:bg-muted/30">
                     <TableCell>
                       <div className="flex flex-col">
-                        <span className="font-medium">{repo.name}</span>
+                        <a
+                          href={`/dashboard?repo=${repo.id}`}
+                          className="cursor-pointer font-medium hover:text-primary hover:underline"
+                        >
+                          {repo.name}
+                        </a>
                         <span className="text-xs text-muted-foreground">
                           {repo.description}
                         </span>
@@ -198,20 +203,6 @@ export default function Repositories() {
                           >
                             <Settings className="h-3.5 w-3.5" />
                             <span>Thresholds</span>
-                          </Link>
-                        </Button>
-                        <Button
-                          variant="outline"
-                          asChild
-                          size="sm"
-                          className="h-8"
-                        >
-                          <Link
-                            to={`/dashboard?repo=${repo.id}`}
-                            className="flex items-center gap-1"
-                          >
-                            <ExternalLink className="h-3.5 w-3.5" />
-                            <span>View Tests</span>
                           </Link>
                         </Button>
                       </div>

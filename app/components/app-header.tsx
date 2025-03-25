@@ -4,7 +4,13 @@ import {
   useNavigate,
   useSearchParams,
 } from "@remix-run/react";
-import { Database, LayoutDashboard, Settings, Snowflake } from "lucide-react";
+import {
+  Database,
+  Gauge,
+  LayoutDashboard,
+  Settings,
+  Snowflake,
+} from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -52,7 +58,7 @@ export function AppHeader({
 
   return (
     <header className="sticky top-0 z-10 border-b bg-gradient-to-r from-blue-50/70 via-background to-cyan-50/70 backdrop-blur supports-[backdrop-filter]:bg-opacity-80 dark:border-slate-800 dark:from-slate-950/90 dark:to-slate-900/90">
-      <div className="mx-auto max-w-screen-lg px-4 py-3 md:px-8">
+      <div className="mx-auto max-w-screen-xl px-4 py-3 md:px-8">
         <div className="flex h-16 items-center">
           <div className="mr-4 flex items-center">
             <Link
@@ -125,7 +131,7 @@ export function AppHeader({
                       : "bg-blue-100/50 text-blue-600 group-hover:bg-blue-100 group-hover:text-blue-700 dark:bg-blue-900/20 dark:text-blue-500 dark:group-hover:bg-blue-900/40 dark:group-hover:text-blue-400",
                   )}
                 >
-                  <Settings className="h-full w-full" />
+                  <Gauge className="h-full w-full" />
                 </div>
                 <span
                   className={cn(
