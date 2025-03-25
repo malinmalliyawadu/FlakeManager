@@ -2,8 +2,7 @@
 export default {
   cacheDirectory: "./node_modules/.cache/remix",
   ignoredRouteFiles: ["**/.*", "**/*.test.{ts,tsx}"],
-  // GitHub Pages deployment configuration
-  publicPath: "/FlakeManager/build/",
-  assetsBuildDirectory: "public/build",
+  // Standard Remix configuration for Netlify
   serverBuildPath: "build/index.js",
+  assetsBuildDirectory: "public/build",
 };

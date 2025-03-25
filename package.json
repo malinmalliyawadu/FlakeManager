@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "remix build",
+    "build:netlify": "remix build",
     "dev": "remix dev -c \"npm run dev:serve\"",
     "dev:serve": "NODE_OPTIONS=\"--import ./mocks/index.js\" remix-serve ./build/index.js",
     "format": "prettier --write .",
@@ -35,6 +36,7 @@
     "@radix-ui/react-toast": "^1.2.6",
     "@radix-ui/react-tooltip": "^1.1.8",
     "@remix-run/css-bundle": "^2.16.2",
+    "@remix-run/netlify": "^1.19.3",
     "@remix-run/node": "^2.16.2",
     "@remix-run/react": "^2.16.2",
     "@remix-run/serve": "^2.16.2",
