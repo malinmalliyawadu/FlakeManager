@@ -1,5 +1,5 @@
 {
-  "name": "FlakeManager-fc8c",
+  "name": "flake-manager",
   "private": true,
   "sideEffects": false,
   "type": "module",
