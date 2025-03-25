@@ -1,5 +1,6 @@
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
+import { useState } from "react";
 import { getCypressService } from "~/services/cypress.server";
 import { getJiraService } from "~/services/jira.server";
 import { PageHeader } from "~/components/page-header";
@@ -20,6 +21,7 @@ import {
   ToggleRight,
 } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
+import { CreateTicketSheet } from "~/components/jira/CreateTicketSheet";
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const testId = params.id;
@@ -53,6 +55,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 export default function TestDetails() {
   const { test, repository, repo, jiraTicket } = useLoaderData<typeof loader>();
+  const [isCreateTicketOpen, setIsCreateTicketOpen] = useState(false);
 
   const isAboveFlakeThreshold =
     test.flakeRate > (repository?.flakeThreshold || 5);
@@ -237,27 +240,27 @@ export default function TestDetails() {
                 </Button>
               ) : (
                 <Button
-                  asChild
                   variant={needsAction ? "default" : "outline"}
                   className={
                     needsAction ? "bg-yellow-600 hover:bg-yellow-700" : ""
                   }
+                  onClick={() => setIsCreateTicketOpen(true)}
                 >
-                  <Link
-                    to={`/create-jira-ticket?testId=${test.id}&testName=${encodeURIComponent(
-                      test.name,
-                    )}&repo=${repo}`}
-                    className="flex items-center"
-                  >
-                    <Ticket className="mr-2 h-4 w-4" />
-                    Create Jira Ticket
-                  </Link>
+                  <Ticket className="mr-2 h-4 w-4" />
+                  Create Jira Ticket
                 </Button>
               )}
             </CardFooter>
           </Card>
         </div>
       </div>
+
+      <CreateTicketSheet
+        isOpen={isCreateTicketOpen}
+        onOpenChange={setIsCreateTicketOpen}
+        test={test}
+        repositoryId={repo}
+      />
     </div>
   );
 }

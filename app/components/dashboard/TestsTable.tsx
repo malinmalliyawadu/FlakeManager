@@ -33,6 +33,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "~/components/ui/tooltip";
+import { CreateTicketSheet } from "~/components/jira/CreateTicketSheet";
 
 interface TestsTableProps {
   tests: Test[];
@@ -47,6 +48,8 @@ export function TestsTable({
 }: TestsTableProps) {
   const [showOnlyExceededThreshold, setShowOnlyExceededThreshold] =
     useState(false);
+  const [isCreateTicketOpen, setIsCreateTicketOpen] = useState(false);
+  const [selectedTest, setSelectedTest] = useState<Test | null>(null);
 
   const filteredTests = showOnlyExceededThreshold
     ? tests.filter(
@@ -55,6 +58,11 @@ export function TestsTable({
           test.failureRate > (repository?.failureThreshold || 10),
       )
     : tests;
+
+  const handleCreateTicket = (test: Test) => {
+    setSelectedTest(test);
+    setIsCreateTicketOpen(true);
+  };
 
   return (
     <div>
@@ -182,7 +190,7 @@ export function TestsTable({
                           <Button
                             variant="outline"
                             size="sm"
-                            asChild
+                            onClick={() => handleCreateTicket(test)}
                             className={
                               test.flakeRate >
                                 (repository?.flakeThreshold || 5) ||
@@ -192,17 +200,13 @@ export function TestsTable({
                                 : ""
                             }
                           >
-                            <Link
-                              to={`/create-jira-ticket?testId=${test.id}&testName=${encodeURIComponent(test.name)}&repo=${selectedRepo}`}
-                            >
-                              <Ticket className="mr-1 h-4 w-4" />
-                              {test.flakeRate >
-                                (repository?.flakeThreshold || 5) ||
-                              test.failureRate >
-                                (repository?.failureThreshold || 10)
-                                ? "Create Ticket (Needed)"
-                                : "Create Ticket"}
-                            </Link>
+                            <Ticket className="mr-1 h-4 w-4" />
+                            {test.flakeRate >
+                              (repository?.flakeThreshold || 5) ||
+                            test.failureRate >
+                              (repository?.failureThreshold || 10)
+                              ? "Create Ticket (Needed)"
+                              : "Create Ticket"}
                           </Button>
                         )}
 
@@ -237,6 +241,13 @@ export function TestsTable({
           </Table>
         </CardContent>
       </Card>
+
+      <CreateTicketSheet
+        isOpen={isCreateTicketOpen}
+        onOpenChange={setIsCreateTicketOpen}
+        test={selectedTest}
+        repositoryId={selectedRepo}
+      />
     </div>
   );
 }

@@ -60,6 +60,7 @@ export class JiraService {
     test: Test,
     repository: string,
     options: {
+      board?: string;
       summary?: string;
       description?: string;
       isManualCreation?: boolean;
@@ -67,6 +68,7 @@ export class JiraService {
   ): Promise<JiraTicket> {
     const isFlaky = test.flakeRate > 5;
     const isFailing = test.failureRate > 10;
+    const board = options.board || this.config.projectKey;
 
     // Default summary and description if not provided
     const summary =
@@ -82,6 +84,7 @@ export class JiraService {
 - Flake rate: ${test.flakeRate}%
 - Failure rate: ${test.failureRate}%
 - Excluded from CI: ${test.excluded ? "Yes" : "No"}
+- Board: ${board}
 
 ${isFlaky ? `This test exceeds the flake threshold (${test.flakeRate}% > 5%)` : ""}
 ${isFailing ? `This test exceeds the failure threshold (${test.failureRate}% > 10%)` : ""}
@@ -91,11 +94,11 @@ ${options.isManualCreation ? "This ticket was manually created." : "This ticket 
     // Mock implementation for development
     const newTicket: JiraTicket = {
       id: `1000${Object.keys(sampleTickets).length + 1}`,
-      key: `FLAKE-${Object.keys(sampleTickets).length + 1}`,
+      key: `${board}-${Object.keys(sampleTickets).length + 1}`,
       summary,
       description,
       status: "Open",
-      url: `https://your-domain.atlassian.net/browse/FLAKE-${Object.keys(sampleTickets).length + 1}`,
+      url: `https://your-domain.atlassian.net/browse/${board}-${Object.keys(sampleTickets).length + 1}`,
     };
 
     // Store in mock data
