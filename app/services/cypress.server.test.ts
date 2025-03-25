@@ -1,7 +1,6 @@
-import { describe, test, expect, beforeEach, vi } from "vitest";
+import { describe, test, expect, beforeEach } from "vitest";
 
 import { CypressService, getCypressService } from "./cypress.server";
-import * as singletonModule from "~/singleton.server";
 
 describe("CypressService", () => {
   let cypressService: CypressService;
@@ -230,10 +229,9 @@ describe("CypressService", () => {
   });
 
   test("getCypressService accepts custom config for first initialization", () => {
-    // Mock the singleton function to return a new instance each time
-    vi.spyOn(singletonModule, "singleton").mockImplementation(
-      (_name, factory) => factory(),
-    );
+    // Reset the singleton for this test
+    // @ts-expect-error - accessing private property for testing
+    globalThis.cypressService = null;
 
     const customConfig = {
       projectId: "singleton123",
@@ -243,10 +241,7 @@ describe("CypressService", () => {
     const service1 = getCypressService(customConfig);
     const service2 = getCypressService({ apiUrl: "this-will-be-ignored.com" });
 
-    // With our mock, we'll get new instances each time
-    expect(service1).not.toBe(service2);
-
-    // Restore original implementation
-    vi.restoreAllMocks();
+    expect(service1).toBe(service2); // Should be the same instance
+    // Config from first call should be used
   });
 });

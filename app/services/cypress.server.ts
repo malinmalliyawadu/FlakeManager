@@ -1,5 +1,4 @@
 import { type Repository, type Test } from "~/types/cypress";
-import { singleton } from "~/singleton.server";
 
 interface CypressApiConfig {
   projectId: string;
@@ -354,8 +353,13 @@ export class CypressService {
   }
 }
 
+let cypressService: CypressService | null = null;
+
 export function getCypressService(
   config: Partial<CypressApiConfig> = {},
 ): CypressService {
-  return singleton("cypressService", () => new CypressService(config));
+  if (cypressService === null) {
+    cypressService = new CypressService(config);
+  }
+  return cypressService;
 }

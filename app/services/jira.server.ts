@@ -1,5 +1,4 @@
 import { type Test } from "~/types/cypress";
-import { singleton } from "~/singleton.server";
 
 interface JiraConfig {
   apiUrl: string;
@@ -133,5 +132,5 @@ ${options.isManualCreation ? "This ticket was manually created." : "This ticket 
 }
 
 export function getJiraService(config: Partial<JiraConfig> = {}): JiraService {
-  return singleton("jiraService", () => new JiraService(config));
+  return new JiraService(config);
 }
