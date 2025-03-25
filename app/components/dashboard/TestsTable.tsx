@@ -207,7 +207,7 @@ export function TestsTable({
                         )}
 
                         <Button
-                          variant="ghost"
+                          variant="outline"
                           size="sm"
                           asChild
                           className="hover:bg-muted/50"
