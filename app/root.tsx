@@ -75,6 +75,41 @@ function ThemePreload() {
   );
 }
 
+// Script to handle GitHub Pages SPA routing
+function GithubPagesRouter() {
+  return (
+    <script
+      dangerouslySetInnerHTML={{
+        __html: `
+          (function() {
+            // Check if we are being redirected from the GitHub Pages 404 page
+            var redirect = sessionStorage.redirect;
+            delete sessionStorage.redirect;
+            
+            if (redirect && redirect !== window.location.href) {
+              history.replaceState(null, null, redirect);
+            }
+            
+            // Handle GitHub Pages path rewriting when accessed directly
+            var l = window.location;
+            if (l.search[1] === '/') {
+              var decoded = l.search.slice(1).split('&').map(function(s) { 
+                return s.replace(/~and~/g, '&');
+              }).join('?');
+              
+              window.history.replaceState(
+                null, 
+                null,
+                l.pathname.slice(0, -1) + decoded + l.hash
+              );
+            }
+          })();
+        `,
+      }}
+    />
+  );
+}
+
 export default function App() {
   const { repositories, selectedRepo, repository } =
     useLoaderData<typeof loader>();
@@ -88,6 +123,7 @@ export default function App() {
         <Meta />
         <Links />
         <ThemePreload />
+        <GithubPagesRouter />
       </head>
       <body className="h-full bg-background">
         <ThemeProvider defaultTheme="system" storageKey="flake-manager-theme">
