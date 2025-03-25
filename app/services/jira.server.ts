@@ -1,4 +1,5 @@
 import { type Test } from "~/types/cypress";
+import { prisma } from "~/db.server";
 
 interface JiraConfig {
   apiUrl: string;
@@ -31,37 +32,6 @@ const defaultConfig: JiraConfig = {
   apiToken: "your_api_token", // In production, this should be loaded from environment variables
 };
 
-// Sample boards for development purposes
-const sampleBoards: JiraBoard[] = [
-  { id: "1", key: "FLAKE", name: "Flaky Tests" },
-  { id: "2", key: "BUG", name: "Bug Tracking" },
-  { id: "3", key: "FRONTEND", name: "Frontend Development" },
-  { id: "4", key: "BACKEND", name: "Backend Development" },
-  { id: "5", key: "API", name: "API Development" },
-  { id: "6", key: "ADMIN", name: "Admin Portal" },
-  { id: "7", key: "QA", name: "Quality Assurance" },
-];
-
-// Mock data for development purposes
-const sampleTickets: Record<string, JiraTicket> = {
-  "4": {
-    id: "10001",
-    key: "FLAKE-1",
-    summary: "Fix flaky test: should add item to cart",
-    description: "This test exceeds the flake threshold (12% > 5%)",
-    status: "Open",
-    url: "https://your-domain.atlassian.net/browse/FLAKE-1",
-  },
-  "5": {
-    id: "10002",
-    key: "FLAKE-2",
-    summary: "Fix failing test: should process payment",
-    description: "This test exceeds the failure threshold (15% > 10%)",
-    status: "Open",
-    url: "https://your-domain.atlassian.net/browse/FLAKE-2",
-  },
-};
-
 export class JiraService {
   private config: JiraConfig;
 
@@ -70,13 +40,43 @@ export class JiraService {
   }
 
   async getBoards(): Promise<JiraBoard[]> {
-    // In a real implementation, this would make an API call to Jira
-    return sampleBoards;
+    // In a real-world scenario, we'd store boards in the database
+    // For now, we're using hardcoded values as a placeholder
+    return [
+      { id: "1", key: "FLAKE", name: "Flaky Tests" },
+      { id: "2", key: "BUG", name: "Bug Tracking" },
+      { id: "3", key: "FRONTEND", name: "Frontend Development" },
+      { id: "4", key: "BACKEND", name: "Backend Development" },
+      { id: "5", key: "API", name: "API Development" },
+      { id: "6", key: "ADMIN", name: "Admin Portal" },
+      { id: "7", key: "QA", name: "Quality Assurance" },
+    ];
   }
 
   async getTicket(testId: string): Promise<JiraTicket | null> {
-    // In a real implementation, this would make an API call to Jira
-    return sampleTickets[testId] || null;
+    // Find the test to get its JIRA ticket information
+    const test = await prisma.test.findUnique({
+      where: { id: testId },
+    });
+
+    if (
+      !test ||
+      !test.jiraTicketId ||
+      !test.jiraTicketKey ||
+      !test.jiraTicketUrl
+    ) {
+      return null;
+    }
+
+    // Construct the ticket from the test data
+    return {
+      id: test.jiraTicketId,
+      key: test.jiraTicketKey,
+      summary: `Fix test: ${test.name}`,
+      description: `Test ${test.name} needs attention`,
+      status: "Open",
+      url: test.jiraTicketUrl,
+    };
   }
 
   async createTicket(
@@ -113,19 +113,29 @@ ${isFlaky ? `This test exceeds the flake threshold (${test.flakeRate}% > 5%)` : 
 ${isFailing ? `This test exceeds the failure threshold (${test.failureRate}% > 10%)` : ""}
 ${options.isManualCreation ? "This ticket was manually created." : "This ticket was automatically created due to threshold violation."}`;
 
-    // In a real implementation, this would make an API call to Jira
-    // Mock implementation for development
+    const ticketId = `1000${Math.floor(Math.random() * 1000)}`;
+    const ticketKey = `${board}-${Math.floor(Math.random() * 100)}`;
+    const ticketUrl = `https://your-domain.atlassian.net/browse/${ticketKey}`;
+
+    // Create a new ticket and update the test in the database
     const newTicket: JiraTicket = {
-      id: `1000${Object.keys(sampleTickets).length + 1}`,
-      key: `${board}-${Object.keys(sampleTickets).length + 1}`,
+      id: ticketId,
+      key: ticketKey,
       summary,
       description,
       status: "Open",
-      url: `https://your-domain.atlassian.net/browse/${board}-${Object.keys(sampleTickets).length + 1}`,
+      url: ticketUrl,
     };
 
-    // Store in mock data
-    sampleTickets[test.id] = newTicket;
+    // Update the test with the JIRA ticket information
+    await prisma.test.update({
+      where: { id: test.id },
+      data: {
+        jiraTicketId: ticketId,
+        jiraTicketKey: ticketKey,
+        jiraTicketUrl: ticketUrl,
+      },
+    });
 
     return newTicket;
   }

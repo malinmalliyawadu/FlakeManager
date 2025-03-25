@@ -1,5 +1,5 @@
 [build]
-  command = "npm run build"
+  command = "npx prisma generate && npm run build"
   publish = "public"
   functions = "netlify/functions"
 
@@ -7,6 +7,11 @@
   command = "remix watch"
   port = 3000
 
+# Add a post-processing step to run migrations
+[build.environment]
+  NODE_VERSION = "18"
+
+# Ensure redirects work correctly
 [[redirects]]
   from = "/*"
   to = "/.netlify/functions/server"

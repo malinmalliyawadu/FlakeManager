@@ -1,5 +1,5 @@
 datasource db {
-  provider = "sqlite"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -35,4 +35,39 @@ model Note {
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId String
+}
+
+model Repository {
+  id               String  @id
+  name             String
+  description      String
+  testCount        Int     @default(0)
+  flakeThreshold   Float   @default(5.0)
+  failureThreshold Float   @default(10.0)
+  defaultJiraBoard String?
+  tests            Test[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Test {
+  id             String  @id
+  name           String
+  file           String
+  flakeRate      Float   @default(0.0)
+  failureRate    Float   @default(0.0)
+  excluded       Boolean @default(false)
+  manualOverride Boolean @default(false)
+  jiraTicketId   String?
+  jiraTicketKey  String?
+  jiraTicketUrl  String?
+
+  repository   Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  repositoryId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([repositoryId])
 }
