@@ -1,4 +1,4 @@
-import { Form, useSubmit, useLocation } from "@remix-run/react";
+import { Form, useLocation } from "@remix-run/react";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { z } from "zod";
@@ -44,7 +44,6 @@ export function CreateTicketSheet({
   const [selectedBoard, setSelectedBoard] = useState(defaultBoard || "");
   const [boards, setBoards] = useState<JiraBoard[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const submit = useSubmit();
   const location = useLocation();
 
   // Fetch JIRA boards when the component mounts
@@ -203,10 +202,12 @@ export function CreateTicketSheet({
                 </SelectContent>
               </Select>
             )}
-            {formErrors.board ? <p className="mt-1 flex items-center gap-1 text-sm text-red-500">
+            {formErrors.board ? (
+              <p className="mt-1 flex items-center gap-1 text-sm text-red-500">
                 <AlertCircle className="h-4 w-4" />
                 {formErrors.board}
-              </p> : null}
+              </p>
+            ) : null}
           </div>
 
           <div className="space-y-2">
@@ -218,10 +219,12 @@ export function CreateTicketSheet({
               placeholder="Enter a concise summary"
               required
             />
-            {formErrors.summary ? <p className="mt-1 flex items-center gap-1 text-sm text-red-500">
+            {formErrors.summary ? (
+              <p className="mt-1 flex items-center gap-1 text-sm text-red-500">
                 <AlertCircle className="h-4 w-4" />
                 {formErrors.summary}
-              </p> : null}
+              </p>
+            ) : null}
           </div>
 
           <div className="space-y-2">
@@ -240,16 +243,20 @@ Test details:
               placeholder="Describe the issue and provide context"
               required
             />
-            {formErrors.description ? <p className="mt-1 flex items-center gap-1 text-sm text-red-500">
+            {formErrors.description ? (
+              <p className="mt-1 flex items-center gap-1 text-sm text-red-500">
                 <AlertCircle className="h-4 w-4" />
                 {formErrors.description}
-              </p> : null}
+              </p>
+            ) : null}
           </div>
 
-          {formErrors.submit ? <p className="flex items-center gap-1 text-sm text-red-500">
+          {formErrors.submit ? (
+            <p className="flex items-center gap-1 text-sm text-red-500">
               <AlertCircle className="h-4 w-4" />
               {formErrors.submit}
-            </p> : null}
+            </p>
+          ) : null}
 
           <SheetFooter className="pt-4">
             <Button

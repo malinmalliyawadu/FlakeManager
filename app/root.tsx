@@ -19,7 +19,6 @@ import { AppHeader } from "~/components/app-header";
 import { ThemeProvider } from "~/components/ui/theme-provider";
 import { getCypressService } from "~/services/cypress.server";
 import stylesheet from "~/tailwind.css";
-import { type Repository } from "~/types/cypress";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: stylesheet },

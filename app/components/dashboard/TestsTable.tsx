@@ -13,13 +13,7 @@ import { useState } from "react";
 import { CreateTicketSheet } from "~/components/jira/CreateTicketSheet";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "~/components/ui/card";
+import { Card, CardContent } from "~/components/ui/card";
 import {
   Table,
   TableBody,
@@ -127,7 +121,8 @@ export function TestsTable({
                         >
                           {test.name}
                         </Link>
-                        {test.manualOverride ? <TooltipProvider>
+                        {test.manualOverride ? (
+                          <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <HandMetal className="h-4 w-4 text-amber-500" />
@@ -139,7 +134,8 @@ export function TestsTable({
                                 </p>
                               </TooltipContent>
                             </Tooltip>
-                          </TooltipProvider> : null}
+                          </TooltipProvider>
+                        ) : null}
                       </div>
                     </TableCell>
                     <TableCell className="text-muted-foreground">
@@ -271,9 +267,11 @@ function FlakeRateBadge({
       >
         {rate}%
       </div>
-      {isExceeded ? <span className="ml-2 text-xs text-muted-foreground">
+      {isExceeded ? (
+        <span className="ml-2 text-xs text-muted-foreground">
           (&gt;{threshold}%)
-        </span> : null}
+        </span>
+      ) : null}
     </div>
   );
 }
@@ -298,9 +296,11 @@ function FailureRateBadge({
       >
         {rate}%
       </div>
-      {isExceeded ? <span className="ml-2 text-xs text-muted-foreground">
+      {isExceeded ? (
+        <span className="ml-2 text-xs text-muted-foreground">
           (&gt;{threshold}%)
-        </span> : null}
+        </span>
+      ) : null}
     </div>
   );
 }

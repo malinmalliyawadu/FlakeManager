@@ -1,5 +1,5 @@
 import { Form } from "@remix-run/react";
-import { Save, ChevronLeft , Gauge } from "lucide-react";
+import { Save, ChevronLeft, Gauge } from "lucide-react";
 import { useState, useEffect } from "react";
 
 import { ThresholdsImpact } from "~/components/thresholds/ThresholdsImpact";
@@ -78,7 +78,7 @@ export function ThresholdsForm({
     <Card className="shadow-sm">
       <CardHeader>
         <div className="flex items-center space-x-2">
-          <Gauge className="text-primary h-5 w-5" />
+          <Gauge className="h-5 w-5 text-primary" />
           <CardTitle>Threshold Settings</CardTitle>
         </div>
         <CardDescription>
@@ -90,7 +90,7 @@ export function ThresholdsForm({
       <CardContent className="space-y-6">
         {/* Impact Preview Section */}
         <div
-          className={`border-muted rounded-lg border p-4 ${
+          className={`rounded-lg border border-muted p-4 ${
             flakeThreshold !== repository.flakeThreshold ||
             failureThreshold !== repository.failureThreshold
               ? "bg-amber-50 dark:bg-amber-950/20"
@@ -117,7 +117,7 @@ export function ThresholdsForm({
             </div>
             <div>
               <h3 className="text-base font-medium">Impact Preview</h3>
-              <p className="text-muted-foreground text-xs">
+              <p className="text-xs text-muted-foreground">
                 {flakeThreshold !== repository.flakeThreshold ||
                 failureThreshold !== repository.failureThreshold
                   ? "Preview of your threshold changes"
@@ -162,16 +162,16 @@ export function ThresholdsForm({
             />
           </div>
 
-          <div className="bg-muted/50 space-y-3 rounded-md border p-4">
+          <div className="space-y-3 rounded-md border bg-muted/50 p-4">
             <h3 className="font-medium">
               What happens when a test is excluded?
             </h3>
-            <p className="text-muted-foreground text-sm">
-              When a test is excluded, it won't run during your CI pipeline.
-              This helps maintain reliable builds while you investigate and fix
-              the root causes of flakiness or failures.
+            <p className="text-sm text-muted-foreground">
+              When a test is excluded, it won&apos;t run during your CI
+              pipeline. This helps maintain reliable builds while you
+              investigate and fix the root causes of flakiness or failures.
             </p>
-            <p className="text-muted-foreground text-sm">
+            <p className="text-sm text-muted-foreground">
               You can manually override these settings for individual tests from
               the dashboard.
             </p>
@@ -237,9 +237,11 @@ function ThresholdInput({
     <div className="space-y-3">
       <Label htmlFor={id} className="text-base">
         {label}
-        {hasChanged ? <span className="ml-2 text-xs text-amber-500">
+        {hasChanged ? (
+          <span className="ml-2 text-xs text-amber-500">
             (changed from {originalValue}%)
-          </span> : null}
+          </span>
+        ) : null}
       </Label>
 
       <div className="flex items-center gap-2">
@@ -261,16 +263,18 @@ function ThresholdInput({
         <span className="text-lg font-medium">%</span>
       </div>
 
-      {error ? <p className="text-destructive text-sm">{error}</p> : null}
+      {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
-      <p className="text-muted-foreground text-sm">{description}</p>
+      <p className="text-sm text-muted-foreground">{description}</p>
 
-      {help ? <p className="text-muted-foreground text-xs">{help}</p> : null}
+      {help ? <p className="text-xs text-muted-foreground">{help}</p> : null}
 
-      {recommendation ? <div className="bg-primary/5 border-primary/10 mt-2 rounded-md border p-2 text-xs">
+      {recommendation ? (
+        <div className="mt-2 rounded-md border border-primary/10 bg-primary/5 p-2 text-xs">
           <span className="font-medium">Recommendation:</span>{" "}
           {recommendation.value}% - {recommendation.description}
-        </div> : null}
+        </div>
+      ) : null}
     </div>
   );
 }

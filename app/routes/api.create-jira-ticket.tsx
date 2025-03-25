@@ -1,18 +1,7 @@
 import { json, type ActionFunctionArgs } from "@remix-run/node";
-import { z } from "zod";
 
 import { getCypressService } from "~/services/cypress.server";
 import { getJiraService } from "~/services/jira.server";
-
-// Validation schema
-const ticketSchema = z.object({
-  testId: z.string(),
-  repo: z.string(),
-  board: z.string().min(1, "Board is required"),
-  summary: z.string().min(5, "Summary must be at least 5 characters"),
-  description: z.string().min(10, "Description must be at least 10 characters"),
-  returnTo: z.string().optional(),
-});
 
 export async function action({ request }: ActionFunctionArgs) {
   const jiraService = getJiraService();

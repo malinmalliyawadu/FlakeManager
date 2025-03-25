@@ -1,13 +1,6 @@
 import { TrendingUp, Info } from "lucide-react";
 
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
-import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -57,7 +50,7 @@ export function TrendVisualizer({
       <div>
         <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <TrendingUp className="text-primary h-5 w-5" />
+            <TrendingUp className="h-5 w-5 text-primary" />
             <h3 className="text-lg font-semibold">
               Test Metrics Visualization
             </h3>
@@ -66,8 +59,8 @@ export function TrendVisualizer({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <button className="hover:bg-muted rounded-full p-1">
-                  <Info className="text-muted-foreground h-4 w-4" />
+                <button className="rounded-full p-1 hover:bg-muted">
+                  <Info className="h-4 w-4 text-muted-foreground" />
                 </button>
               </TooltipTrigger>
               <TooltipContent className="max-w-xs">
@@ -129,14 +122,16 @@ function ThresholdVisualizer({
             <div className="h-2 w-2 rounded-full bg-amber-500"></div>
             <span>Current: {currentThreshold}%</span>
           </div>
-          {newThreshold !== currentThreshold ? <div className="flex items-center gap-1.5">
+          {newThreshold !== currentThreshold ? (
+            <div className="flex items-center gap-1.5">
               <div className="h-2 w-2 rounded-full bg-blue-500"></div>
               <span>New: {newThreshold}%</span>
-            </div> : null}
+            </div>
+          ) : null}
         </div>
       </div>
 
-      <div className="border-border relative h-40 border-b border-l">
+      <div className="relative h-40 border-b border-l border-border">
         {/* Histogram bars */}
         <div className="absolute inset-0 flex items-end">
           {data.map((item, index) => (
@@ -146,7 +141,7 @@ function ThresholdVisualizer({
               style={{ height: `${(item.count / maxCount) * 100}%` }}
             >
               <div
-                className="bg-primary/20 hover:bg-primary/30 h-full w-full transition-colors"
+                className="h-full w-full bg-primary/20 transition-colors hover:bg-primary/30"
                 title={`${item.bin}-${item.bin + 10}%: ${item.count} tests`}
               />
             </div>
@@ -158,19 +153,21 @@ function ThresholdVisualizer({
           className="absolute h-px w-full bg-amber-500"
           style={{ bottom: `${(currentThreshold / maxValue) * 100}%` }}
         >
-          <div className="bg-background absolute -left-2 -top-2 h-4 w-4 rounded-full border border-amber-500"></div>
+          <div className="absolute -left-2 -top-2 h-4 w-4 rounded-full border border-amber-500 bg-background"></div>
         </div>
 
         {/* New threshold marker (only if different) */}
-        {newThreshold !== currentThreshold ? <div
+        {newThreshold !== currentThreshold ? (
+          <div
             className="absolute h-px w-full border-t border-dashed bg-blue-500"
             style={{ bottom: `${(newThreshold / maxValue) * 100}%` }}
           >
-            <div className="bg-background absolute -bottom-2 -right-2 h-4 w-4 rounded-full border border-blue-500"></div>
-          </div> : null}
+            <div className="absolute -bottom-2 -right-2 h-4 w-4 rounded-full border border-blue-500 bg-background"></div>
+          </div>
+        ) : null}
 
         {/* Y-axis ticks */}
-        <div className="text-muted-foreground absolute -left-6 top-0 flex h-full flex-col justify-between text-xs">
+        <div className="absolute -left-6 top-0 flex h-full flex-col justify-between text-xs text-muted-foreground">
           <div>{maxValue}%</div>
           <div>{Math.round(maxValue / 2)}%</div>
           <div>0%</div>
@@ -178,7 +175,7 @@ function ThresholdVisualizer({
       </div>
 
       {/* X-axis labels */}
-      <div className="text-muted-foreground mt-1 flex justify-between text-xs">
+      <div className="mt-1 flex justify-between text-xs text-muted-foreground">
         <div>0%</div>
         <div>50%</div>
         <div>100%</div>

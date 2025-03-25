@@ -4,13 +4,7 @@ import {
   useNavigate,
   useSearchParams,
 } from "@remix-run/react";
-import {
-  Database,
-  Gauge,
-  LayoutDashboard,
-  Settings,
-  Snowflake,
-} from "lucide-react";
+import { Database, Gauge, LayoutDashboard, Snowflake } from "lucide-react";
 
 import {
   Select,
@@ -27,14 +21,9 @@ import { ThemeToggle } from "./ui/theme-toggle";
 interface AppHeaderProps {
   repositories: Repository[];
   selectedRepo: string;
-  repository: Repository | null;
 }
 
-export function AppHeader({
-  repositories,
-  selectedRepo,
-  repository,
-}: AppHeaderProps) {
+export function AppHeader({ repositories, selectedRepo }: AppHeaderProps) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const location = useLocation();

@@ -1,9 +1,4 @@
-import {
-  json,
-  redirect,
-  type ActionFunctionArgs,
-  type LoaderFunctionArgs,
-} from "@remix-run/node";
+import { json, redirect, type ActionFunctionArgs } from "@remix-run/node";
 import {
   Form as RemixForm,
   useActionData,
@@ -15,7 +10,6 @@ import {
   ChevronLeft,
   Database,
   Save,
-  ExternalLink,
   Server,
   Settings,
   Ticket,
@@ -34,7 +28,6 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { Label } from "~/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -55,7 +48,7 @@ import { getJiraService } from "~/services/jira.server";
 import { type JiraBoard } from "~/services/jira.server";
 import { type Repository } from "~/types/cypress";
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader() {
   const cypressService = getCypressService();
   const jiraService = getJiraService();
 
@@ -297,14 +290,18 @@ function RepositoryJiraBoardForm({
           )}
         </Button>
       </RemixForm>
-      {errors?.defaultJiraBoard ? <p className="flex items-center gap-1 text-xs font-medium text-red-500">
+      {errors?.defaultJiraBoard ? (
+        <p className="flex items-center gap-1 text-xs font-medium text-red-500">
           <AlertCircle className="h-3 w-3" />
           {errors.defaultJiraBoard}
-        </p> : null}
-      {hasChanged ? <p className="flex items-center gap-1 text-xs text-amber-500">
+        </p>
+      ) : null}
+      {hasChanged ? (
+        <p className="flex items-center gap-1 text-xs text-amber-500">
           <AlertCircle className="h-3 w-3" />
           Board changed, click Save to update
-        </p> : null}
+        </p>
+      ) : null}
     </div>
   );
 }

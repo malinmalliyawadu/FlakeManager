@@ -89,7 +89,7 @@ export default function TestDetails() {
             <CardHeader>
               <CardTitle>Test Details</CardTitle>
               <CardDescription>
-                Information about this test's status and metrics
+                Information about this test&apos;s status and metrics
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -124,9 +124,11 @@ export default function TestDetails() {
                     }`}
                   >
                     {test.flakeRate}%
-                    {isAboveFlakeThreshold ? <span className="ml-1 text-xs">
+                    {isAboveFlakeThreshold ? (
+                      <span className="ml-1 text-xs">
                         (Threshold: {repository?.flakeThreshold || 5}%)
-                      </span> : null}
+                      </span>
+                    ) : null}
                   </div>
                 </div>
 
@@ -140,9 +142,11 @@ export default function TestDetails() {
                     }`}
                   >
                     {test.failureRate}%
-                    {isAboveFailureThreshold ? <span className="ml-1 text-xs">
+                    {isAboveFailureThreshold ? (
+                      <span className="ml-1 text-xs">
                         (Threshold: {repository?.failureThreshold || 10}%)
-                      </span> : null}
+                      </span>
+                    ) : null}
                   </div>
                 </div>
               </div>

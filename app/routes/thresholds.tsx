@@ -4,20 +4,12 @@ import {
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
 } from "@remix-run/node";
-import {
-  Form as RemixForm,
-  useActionData,
-  useLoaderData,
-} from "@remix-run/react";
-import { ChevronLeft } from "lucide-react";
+import { useActionData, useLoaderData } from "@remix-run/react";
 import { useState } from "react";
 
-import { RepoSelector } from "~/components/dashboard/RepoSelector";
 import { PageHeader } from "~/components/page-header";
 import { MetricsSlideOver } from "~/components/thresholds/MetricsSlideOver";
 import { ThresholdsForm } from "~/components/thresholds/ThresholdsForm";
-import { ThresholdsImpact } from "~/components/thresholds/ThresholdsImpact";
-import { Button } from "~/components/ui/button";
 import { getCypressService } from "~/services/cypress.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -84,8 +76,7 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function Thresholds() {
-  const { repository, repositories, selectedRepo, tests } =
-    useLoaderData<typeof loader>();
+  const { repository, selectedRepo, tests } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
 
   const [thresholds, setThresholds] = useState({

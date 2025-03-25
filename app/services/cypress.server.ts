@@ -307,28 +307,7 @@ export class CypressService {
     return sampleRepositories[repoIndex];
   }
 
-  async getTestsForRepo(
-    repo: string,
-    options?: { flakeThreshold?: number; failureThreshold?: number },
-  ): Promise<Test[]> {
-    let thresholds = { flakeThreshold: 5, failureThreshold: 10 };
-
-    // If no options provided, use the repo's configured thresholds
-    if (!options) {
-      const repository = await this.getRepository(repo);
-      if (repository) {
-        thresholds = {
-          flakeThreshold: repository.flakeThreshold,
-          failureThreshold: repository.failureThreshold,
-        };
-      }
-    } else {
-      thresholds = {
-        flakeThreshold: options.flakeThreshold ?? 5,
-        failureThreshold: options.failureThreshold ?? 10,
-      };
-    }
-
+  async getTestsForRepo(repo: string): Promise<Test[]> {
     // Get tests for the specified repository or return a default set
     const tests = repoTestData[repo] || [];
 
