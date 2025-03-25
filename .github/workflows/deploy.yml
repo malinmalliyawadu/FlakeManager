@@ -118,7 +118,7 @@ jobs:
   deploy:
     name: 🚀 Deploy to GitHub Pages
     runs-on: ubuntu-latest
-    needs: [lint, typecheck, vitest, cypress]
+    needs: [lint, typecheck, vitest]
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

@@ -130,7 +130,6 @@ export default function App() {
             <AppHeader
               repositories={repositories}
               selectedRepo={selectedRepo}
-              repository={repository}
             />
 
             <main className="flex-1 bg-background">
