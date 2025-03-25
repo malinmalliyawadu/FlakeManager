@@ -1,4 +1,7 @@
 import { Link } from "@remix-run/react";
+import { AlertTriangle, Gauge, Settings } from "lucide-react";
+
+import { Button } from "~/components/ui/button";
 import {
   Card,
   CardContent,
@@ -7,9 +10,8 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { Button } from "~/components/ui/button";
 import { type Repository } from "~/types/cypress";
-import { AlertTriangle, Gauge, Settings } from "lucide-react";
+
 
 interface ThresholdsCardProps {
   repository: Repository | null;
@@ -31,12 +33,10 @@ export function ThresholdsCard({
             <Gauge className="text-primary h-5 w-5" />
             <CardTitle>Current Thresholds</CardTitle>
           </div>
-          {needsAttention(flakeThreshold, failureThreshold) && (
-            <div className="flex items-center text-amber-500">
+          {needsAttention(flakeThreshold, failureThreshold) ? <div className="flex items-center text-amber-500">
               <AlertTriangle className="mr-1 h-4 w-4" />
               <span className="text-xs font-medium">Review recommended</span>
-            </div>
-          )}
+            </div> : null}
         </div>
         <CardDescription>
           Tests that exceed these thresholds are automatically excluded from

@@ -1,9 +1,17 @@
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
+import {
+  ArrowLeft,
+  ExternalLink,
+  Ticket,
+  ToggleLeft,
+  ToggleRight,
+} from "lucide-react";
 import { useState } from "react";
-import { getCypressService } from "~/services/cypress.server";
-import { getJiraService } from "~/services/jira.server";
+
+import { CreateTicketSheet } from "~/components/jira/CreateTicketSheet";
 import { PageHeader } from "~/components/page-header";
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -13,15 +21,8 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import {
-  ArrowLeft,
-  ExternalLink,
-  Ticket,
-  ToggleLeft,
-  ToggleRight,
-} from "lucide-react";
-import { Badge } from "~/components/ui/badge";
-import { CreateTicketSheet } from "~/components/jira/CreateTicketSheet";
+import { getCypressService } from "~/services/cypress.server";
+import { getJiraService } from "~/services/jira.server";
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const testId = params.id;
@@ -107,7 +108,7 @@ export default function TestDetails() {
                     }`}
                   >
                     {test.excluded ? "Excluded from CI" : "Included in CI"}
-                    {test.manualOverride && " (Manual Override)"}
+                    {test.manualOverride ? " (Manual Override)" : null}
                   </Badge>
                 </div>
               </div>
@@ -123,11 +124,9 @@ export default function TestDetails() {
                     }`}
                   >
                     {test.flakeRate}%
-                    {isAboveFlakeThreshold && (
-                      <span className="ml-1 text-xs">
+                    {isAboveFlakeThreshold ? <span className="ml-1 text-xs">
                         (Threshold: {repository?.flakeThreshold || 5}%)
-                      </span>
-                    )}
+                      </span> : null}
                   </div>
                 </div>
 
@@ -141,11 +140,9 @@ export default function TestDetails() {
                     }`}
                   >
                     {test.failureRate}%
-                    {isAboveFailureThreshold && (
-                      <span className="ml-1 text-xs">
+                    {isAboveFailureThreshold ? <span className="ml-1 text-xs">
                         (Threshold: {repository?.failureThreshold || 10}%)
-                      </span>
-                    )}
+                      </span> : null}
                   </div>
                 </div>
               </div>

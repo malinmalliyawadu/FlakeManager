@@ -1,4 +1,5 @@
-import { type Repository, type Test } from "~/types/cypress";
+import { TrendingUp, Info } from "lucide-react";
+
 import {
   Card,
   CardContent,
@@ -6,13 +7,13 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { TrendingUp, Info } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "~/components/ui/tooltip";
+import { type Repository, type Test } from "~/types/cypress";
 
 interface TrendVisualizerProps {
   repository: Repository;
@@ -128,12 +129,10 @@ function ThresholdVisualizer({
             <div className="h-2 w-2 rounded-full bg-amber-500"></div>
             <span>Current: {currentThreshold}%</span>
           </div>
-          {newThreshold !== currentThreshold && (
-            <div className="flex items-center gap-1.5">
+          {newThreshold !== currentThreshold ? <div className="flex items-center gap-1.5">
               <div className="h-2 w-2 rounded-full bg-blue-500"></div>
               <span>New: {newThreshold}%</span>
-            </div>
-          )}
+            </div> : null}
         </div>
       </div>
 
@@ -163,14 +162,12 @@ function ThresholdVisualizer({
         </div>
 
         {/* New threshold marker (only if different) */}
-        {newThreshold !== currentThreshold && (
-          <div
+        {newThreshold !== currentThreshold ? <div
             className="absolute h-px w-full border-t border-dashed bg-blue-500"
             style={{ bottom: `${(newThreshold / maxValue) * 100}%` }}
           >
             <div className="bg-background absolute -bottom-2 -right-2 h-4 w-4 rounded-full border border-blue-500"></div>
-          </div>
-        )}
+          </div> : null}
 
         {/* Y-axis ticks */}
         <div className="text-muted-foreground absolute -left-6 top-0 flex h-full flex-col justify-between text-xs">

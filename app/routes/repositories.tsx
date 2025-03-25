@@ -11,8 +11,6 @@ import {
   useNavigation,
   Link,
 } from "@remix-run/react";
-import { useState } from "react";
-import { Button } from "~/components/ui/button";
 import {
   ChevronLeft,
   Database,
@@ -23,19 +21,11 @@ import {
   Ticket,
   AlertCircle,
 } from "lucide-react";
+import { useState } from "react";
+
 import { PageHeader } from "~/components/page-header";
-import { getCypressService } from "~/services/cypress.server";
-import { getJiraService } from "~/services/jira.server";
-import { type Repository } from "~/types/cypress";
-import { type JiraBoard } from "~/services/jira.server";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "~/components/ui/table";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
 import {
   Card,
   CardContent,
@@ -44,6 +34,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import { Label } from "~/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -51,8 +42,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { Label } from "~/components/ui/label";
-import { Badge } from "~/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table";
+import { getCypressService } from "~/services/cypress.server";
+import { getJiraService } from "~/services/jira.server";
+import { type JiraBoard } from "~/services/jira.server";
+import { type Repository } from "~/types/cypress";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const cypressService = getCypressService();
@@ -296,18 +297,14 @@ function RepositoryJiraBoardForm({
           )}
         </Button>
       </RemixForm>
-      {errors?.defaultJiraBoard && (
-        <p className="flex items-center gap-1 text-xs font-medium text-red-500">
+      {errors?.defaultJiraBoard ? <p className="flex items-center gap-1 text-xs font-medium text-red-500">
           <AlertCircle className="h-3 w-3" />
           {errors.defaultJiraBoard}
-        </p>
-      )}
-      {hasChanged && (
-        <p className="flex items-center gap-1 text-xs text-amber-500">
+        </p> : null}
+      {hasChanged ? <p className="flex items-center gap-1 text-xs text-amber-500">
           <AlertCircle className="h-3 w-3" />
           Board changed, click Save to update
-        </p>
-      )}
+        </p> : null}
     </div>
   );
 }

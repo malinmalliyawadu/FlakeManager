@@ -1,5 +1,8 @@
+import { LineChart, BarChart4 } from "lucide-react";
 import { useState } from "react";
-import { type Repository, type Test } from "~/types/cypress";
+
+import { TrendVisualizer } from "~/components/thresholds/TrendVisualizer";
+import { Button } from "~/components/ui/button";
 import {
   Sheet,
   SheetContent,
@@ -8,9 +11,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "~/components/ui/sheet";
-import { Button } from "~/components/ui/button";
-import { TrendVisualizer } from "~/components/thresholds/TrendVisualizer";
-import { LineChart, BarChart4 } from "lucide-react";
+import { type Repository, type Test } from "~/types/cypress";
 
 interface MetricsSlideOverProps {
   repository: Repository;

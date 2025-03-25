@@ -1,5 +1,7 @@
 import { Link, Form } from "@remix-run/react";
-import { type Repository } from "~/types/cypress";
+import { FolderGit2 } from "lucide-react";
+import { useState, useEffect } from "react";
+
 import { Button } from "~/components/ui/button";
 import {
   Select,
@@ -8,8 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { useState, useEffect } from "react";
-import { FolderGit2 } from "lucide-react";
+import { type Repository } from "~/types/cypress";
+
 
 interface RepoSelectorProps {
   repositories: Repository[];

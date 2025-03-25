@@ -1,14 +1,15 @@
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
+import { ChevronRight } from "lucide-react";
+
+import { DashboardStats } from "~/components/dashboard/DashboardStats";
+import { RepoSelector } from "~/components/dashboard/RepoSelector";
+import { TestsTable } from "~/components/dashboard/TestsTable";
+import { ThresholdsCard } from "~/components/dashboard/ThresholdsCard";
+import { PageHeader } from "~/components/page-header";
+import { Button } from "~/components/ui/button";
 import { getCypressService } from "~/services/cypress.server";
 import { getJiraService } from "~/services/jira.server";
-import { Button } from "~/components/ui/button";
-import { ChevronRight } from "lucide-react";
-import { PageHeader } from "~/components/page-header";
-import { TestsTable } from "~/components/dashboard/TestsTable";
-import { DashboardStats } from "~/components/dashboard/DashboardStats";
-import { ThresholdsCard } from "~/components/dashboard/ThresholdsCard";
-import { RepoSelector } from "~/components/dashboard/RepoSelector";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const cypressService = getCypressService();

@@ -1,5 +1,6 @@
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Activity, CheckCircle, XCircle, Ticket } from "lucide-react";
+
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 
 interface StatsProps {
   counts: {
@@ -70,9 +71,7 @@ function StatsCard({
       </CardHeader>
       <CardContent>
         <div className={`text-3xl font-bold ${valueClassName}`}>{value}</div>
-        {description && (
-          <p className="mt-1 text-xs text-muted-foreground">{description}</p>
-        )}
+        {description ? <p className="mt-1 text-xs text-muted-foreground">{description}</p> : null}
       </CardContent>
     </Card>
   );

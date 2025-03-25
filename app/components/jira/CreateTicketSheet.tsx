@@ -1,11 +1,18 @@
-import { useState, useEffect } from "react";
 import { Form, useSubmit, useLocation } from "@remix-run/react";
+import { AlertCircle, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
 import { z } from "zod";
+
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { Textarea } from "~/components/ui/textarea";
-import { AlertCircle, Loader2 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 import {
   Sheet,
   SheetContent,
@@ -14,15 +21,9 @@ import {
   SheetTitle,
   SheetFooter,
 } from "~/components/ui/sheet";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
-import { type Test } from "~/types/cypress";
+import { Textarea } from "~/components/ui/textarea";
 import { type JiraBoard } from "~/services/jira.server";
+import { type Test } from "~/types/cypress";
 
 interface CreateTicketSheetProps {
   isOpen: boolean;
@@ -202,12 +203,10 @@ export function CreateTicketSheet({
                 </SelectContent>
               </Select>
             )}
-            {formErrors.board && (
-              <p className="mt-1 flex items-center gap-1 text-sm text-red-500">
+            {formErrors.board ? <p className="mt-1 flex items-center gap-1 text-sm text-red-500">
                 <AlertCircle className="h-4 w-4" />
                 {formErrors.board}
-              </p>
-            )}
+              </p> : null}
           </div>
 
           <div className="space-y-2">
@@ -219,12 +218,10 @@ export function CreateTicketSheet({
               placeholder="Enter a concise summary"
               required
             />
-            {formErrors.summary && (
-              <p className="mt-1 flex items-center gap-1 text-sm text-red-500">
+            {formErrors.summary ? <p className="mt-1 flex items-center gap-1 text-sm text-red-500">
                 <AlertCircle className="h-4 w-4" />
                 {formErrors.summary}
-              </p>
-            )}
+              </p> : null}
           </div>
 
           <div className="space-y-2">
@@ -243,20 +240,16 @@ Test details:
               placeholder="Describe the issue and provide context"
               required
             />
-            {formErrors.description && (
-              <p className="mt-1 flex items-center gap-1 text-sm text-red-500">
+            {formErrors.description ? <p className="mt-1 flex items-center gap-1 text-sm text-red-500">
                 <AlertCircle className="h-4 w-4" />
                 {formErrors.description}
-              </p>
-            )}
+              </p> : null}
           </div>
 
-          {formErrors.submit && (
-            <p className="flex items-center gap-1 text-sm text-red-500">
+          {formErrors.submit ? <p className="flex items-center gap-1 text-sm text-red-500">
               <AlertCircle className="h-4 w-4" />
               {formErrors.submit}
-            </p>
-          )}
+            </p> : null}
 
           <SheetFooter className="pt-4">
             <Button

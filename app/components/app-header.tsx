@@ -11,6 +11,7 @@ import {
   Settings,
   Snowflake,
 } from "lucide-react";
+
 import {
   Select,
   SelectContent,
@@ -18,8 +19,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { type Repository } from "~/types/cypress";
 import { cn } from "~/lib/utils";
+import { type Repository } from "~/types/cypress";
+
 import { ThemeToggle } from "./ui/theme-toggle";
 
 interface AppHeaderProps {

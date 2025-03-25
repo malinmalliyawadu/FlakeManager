@@ -1,10 +1,9 @@
 import { Form } from "@remix-run/react";
+import { Save, ChevronLeft , Gauge } from "lucide-react";
 import { useState, useEffect } from "react";
-import { Input } from "~/components/ui/input";
+
+import { ThresholdsImpact } from "~/components/thresholds/ThresholdsImpact";
 import { Button } from "~/components/ui/button";
-import { Label } from "~/components/ui/label";
-import { Save, ChevronLeft } from "lucide-react";
-import { type Repository, type Test } from "~/types/cypress";
 import {
   Card,
   CardContent,
@@ -13,8 +12,9 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { Gauge } from "lucide-react";
-import { ThresholdsImpact } from "~/components/thresholds/ThresholdsImpact";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import { type Repository, type Test } from "~/types/cypress";
 
 interface ThresholdsFormProps {
   repository: Repository;
@@ -237,11 +237,9 @@ function ThresholdInput({
     <div className="space-y-3">
       <Label htmlFor={id} className="text-base">
         {label}
-        {hasChanged && (
-          <span className="ml-2 text-xs text-amber-500">
+        {hasChanged ? <span className="ml-2 text-xs text-amber-500">
             (changed from {originalValue}%)
-          </span>
-        )}
+          </span> : null}
       </Label>
 
       <div className="flex items-center gap-2">
@@ -263,18 +261,16 @@ function ThresholdInput({
         <span className="text-lg font-medium">%</span>
       </div>
 
-      {error && <p className="text-destructive text-sm">{error}</p>}
+      {error ? <p className="text-destructive text-sm">{error}</p> : null}
 
       <p className="text-muted-foreground text-sm">{description}</p>
 
-      {help && <p className="text-muted-foreground text-xs">{help}</p>}
+      {help ? <p className="text-muted-foreground text-xs">{help}</p> : null}
 
-      {recommendation && (
-        <div className="bg-primary/5 border-primary/10 mt-2 rounded-md border p-2 text-xs">
+      {recommendation ? <div className="bg-primary/5 border-primary/10 mt-2 rounded-md border p-2 text-xs">
           <span className="font-medium">Recommendation:</span>{" "}
           {recommendation.value}% - {recommendation.description}
-        </div>
-      )}
+        </div> : null}
     </div>
   );
 }

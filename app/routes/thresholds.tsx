@@ -9,15 +9,16 @@ import {
   useActionData,
   useLoaderData,
 } from "@remix-run/react";
-import { useState } from "react";
-import { Button } from "~/components/ui/button";
 import { ChevronLeft } from "lucide-react";
+import { useState } from "react";
+
+import { RepoSelector } from "~/components/dashboard/RepoSelector";
 import { PageHeader } from "~/components/page-header";
-import { getCypressService } from "~/services/cypress.server";
+import { MetricsSlideOver } from "~/components/thresholds/MetricsSlideOver";
 import { ThresholdsForm } from "~/components/thresholds/ThresholdsForm";
 import { ThresholdsImpact } from "~/components/thresholds/ThresholdsImpact";
-import { MetricsSlideOver } from "~/components/thresholds/MetricsSlideOver";
-import { RepoSelector } from "~/components/dashboard/RepoSelector";
+import { Button } from "~/components/ui/button";
+import { getCypressService } from "~/services/cypress.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const cypressService = getCypressService();

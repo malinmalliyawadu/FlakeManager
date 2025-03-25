@@ -338,7 +338,7 @@ export class CypressService {
   async toggleTestExclusion(
     testId: string,
     excluded: boolean,
-    repo: string = "demo-repo",
+    repo = "demo-repo",
   ): Promise<Test | null> {
     // For now, we'll just return a mocked response
     // In a real implementation, this would update a database or call an API
