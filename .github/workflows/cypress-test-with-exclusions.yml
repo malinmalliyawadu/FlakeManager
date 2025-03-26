@@ -1,0 +1,70 @@
+name: Cypress Tests with Flake Management
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  cypress-run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: "npm"
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Get Test Exclusions from Flake Manager
+        id: get-exclusions
+        run: |
+          # Get the list of tests to exclude from Flake Manager
+          EXCLUDED_TESTS=$(curl -s "https://your-flake-manager-instance.com/api/excluded-tests?repo=${{ github.repository }}")
+
+          # Check if the API call was successful
+          if [[ $(echo $EXCLUDED_TESTS | jq -r '.status') == "error" ]]; then
+            echo "Error from Flake Manager: $(echo $EXCLUDED_TESTS | jq -r '.message')"
+            echo "Using default exclusions"
+            GREP_PATTERN=""
+          else
+            # Extract test names and format them for cypress-grep
+            # Format as "test1|test2|test3" for cypress-grep
+            GREP_PATTERN=$(echo $EXCLUDED_TESTS | jq -r '.data | map(.name) | join("|")')
+            
+            # If there are tests to exclude, add the grep pattern to the env variable
+            if [[ ! -z "$GREP_PATTERN" ]]; then
+              echo "excludedTests=$GREP_PATTERN" >> $GITHUB_ENV
+              echo "Found ${#EXCLUDED_TESTS[@]} tests to exclude"
+            else
+              echo "No tests to exclude"
+            fi
+          fi
+
+      - name: Run Cypress Tests with Exclusions
+        uses: cypress-io/github-action@v5
+        with:
+          build: npm run build
+          start: npm run start
+        env:
+          # Use cypress-grep to exclude the flaky tests
+          # The ! prefix means "not matching these patterns"
+          CYPRESS_GREP: ${{ env.excludedTests && format('!({0})', env.excludedTests) || '' }}
+          CYPRESS_GREP_INVERT: ${{ env.excludedTests && 'true' || 'false' }}
+
+      - name: Upload Cypress Test Results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: cypress-results
+          path: |
+            cypress/screenshots
+            cypress/videos
+            cypress/results
