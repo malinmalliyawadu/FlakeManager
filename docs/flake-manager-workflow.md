@@ -5,7 +5,7 @@ This diagram visualizes how Flake Manager integrates with GitHub Actions workflo
 ## CI Integration Flow
 
 ```mermaid
-flowchart TB
+flowchart LR
     %% GitHub Actions CI process
     subgraph "GitHub Actions CI"
         start[Start CI Workflow]
@@ -59,7 +59,7 @@ flowchart TB
 ## Manual Test Management Flow
 
 ```mermaid
-flowchart TB
+flowchart LR
     %% UI operations
     subgraph "Manual Operations"
         ui[Flake Manager Dashboard]
