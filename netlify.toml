@@ -16,7 +16,13 @@
   # The following ensures Prisma can connect to your database in production
   DATABASE_URL = ""  # This will be overridden by the Netlify environment variable with the same name
 
-# Ensure redirects work correctly
+# Ensure static assets are served directly
+[[redirects]]
+  from = "/build/*"
+  to = "/build/:splat"
+  status = 200
+
+# Then route everything else to the Remix server
 [[redirects]]
   from = "/*"
   to = "/.netlify/functions/server"
