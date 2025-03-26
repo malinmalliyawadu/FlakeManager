@@ -1,8 +1,15 @@
 node_modules
 
-/build
-/public/build
+.cache
 .env
+.vercel
+.output
+
+build
+dist
+public/build
+api/index.js
+api/index.js.map
 
 /cypress/screenshots
 /cypress/videos
