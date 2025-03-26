@@ -17,8 +17,7 @@
     "pretest:e2e:run": "npm run build",
     "test:e2e:run": "cross-env PORT=8811 start-server-and-test start:mocks http://localhost:8811 \"npx cypress run\"",
     "typecheck": "tsc && tsc -p cypress",
-    "validate": "npm-run-all --parallel \"test -- --run\" lint typecheck test:e2e:run",
-    "vercel-build": "prisma generate && prisma migrate deploy && remix build"
+    "validate": "npm-run-all --parallel \"test -- --run\" lint typecheck test:e2e:run"
   },
   "eslintIgnore": [
     "/node_modules",
@@ -36,12 +35,15 @@
     "@radix-ui/react-toast": "^1.2.6",
     "@radix-ui/react-tooltip": "^1.1.8",
     "@remix-run/css-bundle": "^2.16.2",
+    "@remix-run/express": "^2.16.2",
+    "@remix-run/netlify": "^1.19.3",
     "@remix-run/node": "^2.16.2",
     "@remix-run/react": "^2.16.2",
     "@remix-run/serve": "^2.16.2",
     "bcryptjs": "^2.4.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "express": "^4.21.2",
     "isbot": "^5.1.17",
     "lucide-react": "^0.483.0",
     "react": "^18.3.1",
@@ -65,7 +67,6 @@
     "@types/react-dom": "^18.3.5",
     "@typescript-eslint/eslint-plugin": "^8.15.0",
     "@typescript-eslint/parser": "^8.15.0",
-    "@vercel/node": "^5.1.14",
     "@vitejs/plugin-react": "^4.3.3",
     "@vitest/coverage-v8": "^2.1.5",
     "autoprefixer": "^10.4.20",

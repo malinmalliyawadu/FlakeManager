@@ -2,11 +2,9 @@
 export default {
   cacheDirectory: "./node_modules/.cache/remix",
   ignoredRouteFiles: ["**/.*", "**/*.test.{ts,tsx}"],
-  // Server build configuration for Vercel deployment
-  serverBuildPath: "api/index.js",
-  serverModuleFormat: "esm",
+  // Standard Remix configuration for Netlify
+  serverBuildPath: "build/index.js",
   assetsBuildDirectory: "public/build",
-  publicPath: "/build/",
   future: {
     v3_fetcherPersist: true,
     v3_lazyRouteDiscovery: true,
