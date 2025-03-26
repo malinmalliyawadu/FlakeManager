@@ -46,10 +46,10 @@ flowchart TB
     response --> configGrep
     service --> cypressAPI
 
-    %% Styling
-    classDef ghactions fill:#f9f,stroke:#333,stroke-width:2px
-    classDef flakemanager fill:#bbf,stroke:#333,stroke-width:2px
-    classDef cypress fill:#bfb,stroke:#333,stroke-width:2px
+    %% Styling - adjusted for dark mode readability
+    classDef ghactions fill:#4a235a,stroke:#ffffff,stroke-width:2px,color:#ffffff
+    classDef flakemanager fill:#1a5276,stroke:#ffffff,stroke-width:2px,color:#ffffff
+    classDef cypress fill:#0e6655,stroke:#ffffff,stroke-width:2px,color:#ffffff
 
     class start,getExclusions,configGrep,runTests ghactions
     class api,service,calc,response flakemanager
@@ -90,10 +90,10 @@ flowchart TB
     jiraIntegration --> jiraAPI
     dbService <--> cypressAPI
 
-    %% Styling
-    classDef manual fill:#f9f,stroke:#333,stroke-width:2px
-    classDef backend fill:#bbf,stroke:#333,stroke-width:2px
-    classDef external fill:#bfb,stroke:#333,stroke-width:2px
+    %% Styling - adjusted for dark mode readability
+    classDef manual fill:#4a235a,stroke:#ffffff,stroke-width:2px,color:#ffffff
+    classDef backend fill:#1a5276,stroke:#ffffff,stroke-width:2px,color:#ffffff
+    classDef external fill:#0e6655,stroke:#ffffff,stroke-width:2px,color:#ffffff
 
     class ui,view,toggle,createTicket manual
     class dbService,jiraIntegration backend
