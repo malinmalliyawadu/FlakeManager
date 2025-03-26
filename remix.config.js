@@ -3,8 +3,10 @@ export default {
   cacheDirectory: "./node_modules/.cache/remix",
   ignoredRouteFiles: ["**/.*", "**/*.test.{ts,tsx}"],
   // Server build configuration for Vercel deployment
-  serverBuildPath: "build/index.js",
+  serverBuildPath: "api/index.js",
+  serverModuleFormat: "esm",
   assetsBuildDirectory: "public/build",
+  publicPath: "/build/",
   future: {
     v3_fetcherPersist: true,
     v3_lazyRouteDiscovery: true,
