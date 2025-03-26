@@ -7,9 +7,14 @@
   command = "remix watch"
   port = 3000
 
-# Add a post-processing step to run migrations
+# Database configuration 
+# Make sure you have set the following environment variables in the Netlify UI:
+# - DATABASE_URL: Your regular database connection string for application use
+# - MIGRATION_DATABASE_URL: Your migration-specific database connection string (if different)
 [build.environment]
   NODE_VERSION = "18"
+  # The following ensures Prisma can connect to your database in production
+  DATABASE_URL = ""  # This will be overridden by the Netlify environment variable with the same name
 
 # Ensure redirects work correctly
 [[redirects]]
