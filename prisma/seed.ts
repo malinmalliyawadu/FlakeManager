@@ -1,4 +1,11 @@
 import { PrismaClient } from "@prisma/client";
+import {
+  mainAppTests,
+  adminPortalTests,
+  apiServiceTests,
+  mobileAppTests,
+  demoRepoTests,
+} from "./test-data";
 
 const prisma = new PrismaClient();
 
@@ -50,99 +57,6 @@ const sampleRepositories = [
   },
 ];
 
-// Sample test data for different repositories
-const sampleTests = [
-  // main-app tests
-  {
-    id: "ma-1",
-    name: "should render landing page",
-    file: "landing.spec.ts",
-    flakeRate: 3,
-    failureRate: 1,
-    excluded: false,
-    manualOverride: false,
-    repositoryId: "main-app",
-  },
-  {
-    id: "ma-2",
-    name: "should navigate to features page",
-    file: "navigation.spec.ts",
-    flakeRate: 8,
-    failureRate: 4,
-    excluded: true,
-    manualOverride: true,
-    repositoryId: "main-app",
-  },
-  {
-    id: "ma-3",
-    name: "should submit contact form",
-    file: "forms.spec.ts",
-    flakeRate: 1,
-    failureRate: 0,
-    excluded: false,
-    manualOverride: false,
-    repositoryId: "main-app",
-  },
-
-  // demo-repo tests
-  {
-    id: "1",
-    name: "should load home page",
-    file: "home.spec.ts",
-    flakeRate: 1,
-    failureRate: 2,
-    excluded: false,
-    manualOverride: false,
-    repositoryId: "demo-repo",
-  },
-  {
-    id: "2",
-    name: "should login successfully",
-    file: "auth.spec.ts",
-    flakeRate: 7,
-    failureRate: 3,
-    excluded: true,
-    manualOverride: true,
-    repositoryId: "demo-repo",
-  },
-  {
-    id: "3",
-    name: "should display product catalog",
-    file: "products.spec.ts",
-    flakeRate: 0,
-    failureRate: 0,
-    excluded: false,
-    manualOverride: false,
-    repositoryId: "demo-repo",
-  },
-  {
-    id: "4",
-    name: "should add item to cart",
-    file: "cart.spec.ts",
-    flakeRate: 12,
-    failureRate: 5,
-    excluded: true,
-    manualOverride: false,
-    repositoryId: "demo-repo",
-    jiraTicketId: "10001",
-    jiraTicketKey: "FLAKE-1",
-    jiraTicketUrl: "https://your-domain.atlassian.net/browse/FLAKE-1",
-  },
-  {
-    id: "5",
-    name: "should process payment",
-    file: "checkout.spec.ts",
-    flakeRate: 2,
-    failureRate: 15,
-    excluded: true,
-    manualOverride: false,
-    repositoryId: "demo-repo",
-    jiraTicketId: "10002",
-    jiraTicketKey: "FLAKE-2",
-    jiraTicketUrl: "https://your-domain.atlassian.net/browse/FLAKE-2",
-  },
-];
-
 async function seed() {
   console.log(`Start seeding...`);
 
@@ -155,13 +69,33 @@ async function seed() {
     });
   }
 
-  // Create tests
-  for (const test of sampleTests) {
-    await prisma.test.upsert({
-      where: { id: test.id },
-      update: test,
-      create: test,
-    });
+  // Create tests from separate files
+  const allTests = [
+    ...mainAppTests,
+    ...adminPortalTests,
+    ...apiServiceTests,
+    ...mobileAppTests,
+    ...demoRepoTests,
+  ];
+
+  for (const test of allTests) {
+    if (test.repository?.connect?.id) {
+      // Get the repositoryId from the test
+      const repositoryId = test.repository.connect.id;
+
+      // Omit the repository field for database operations
+      const { repository, ...testData } = test;
+
+      await prisma.test.upsert({
+        where: { id: testData.id },
+        update: { ...testData, repositoryId },
+        create: { ...testData, repositoryId },
+      });
+    } else {
+      console.error(
+        `Test ${test.id} missing repository connection information. Skipping.`,
+      );
+    }
   }
 
   console.log(`Seeding finished.`);

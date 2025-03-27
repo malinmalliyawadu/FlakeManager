@@ -8,9 +8,11 @@ import {
   Ticket,
   ExternalLink,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 import { CreateTicketSheet } from "~/components/jira/CreateTicketSheet";
+import { TablePagination } from "~/components/dashboard/TablePagination";
+import { TableSearch } from "~/components/dashboard/TableSearch";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
@@ -45,14 +47,56 @@ export function TestsTable({
     useState(false);
   const [isCreateTicketOpen, setIsCreateTicketOpen] = useState(false);
   const [selectedTest, setSelectedTest] = useState<Test | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
-  const filteredTests = showOnlyExceededThreshold
-    ? tests.filter(
+  // Filter tests based on threshold and search term
+  const filteredTests = useMemo(() => {
+    let filtered = showOnlyExceededThreshold
+      ? tests.filter(
+          (test) =>
+            test.flakeRate > (repository?.flakeThreshold || 5) ||
+            test.failureRate > (repository?.failureThreshold || 10),
+        )
+      : tests;
+
+    // Apply search filter if searchTerm exists
+    if (searchTerm.trim() !== "") {
+      const lowerSearchTerm = searchTerm.toLowerCase();
+      filtered = filtered.filter(
         (test) =>
-          test.flakeRate > (repository?.flakeThreshold || 5) ||
-          test.failureRate > (repository?.failureThreshold || 10),
-      )
-    : tests;
+          test.name.toLowerCase().includes(lowerSearchTerm) ||
+          test.file.toLowerCase().includes(lowerSearchTerm),
+      );
+    }
+
+    return filtered;
+  }, [tests, showOnlyExceededThreshold, repository, searchTerm]);
+
+  // Calculate pagination
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredTests.length / itemsPerPage),
+  );
+
+  // Get current page items
+  const currentItems = useMemo(() => {
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    return filteredTests.slice(indexOfFirstItem, indexOfLastItem);
+  }, [filteredTests, currentPage, itemsPerPage]);
+
+  // Handle page change
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+  };
+
+  // Handle search
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+    setCurrentPage(1); // Reset to first page when searching
+  };
 
   const handleCreateTicket = (test: Test) => {
     setSelectedTest(test);
@@ -61,9 +105,13 @@ export function TestsTable({
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-1 flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
         <h2 className="text-2xl font-bold tracking-tight">Test Status</h2>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:gap-3 sm:space-y-0">
+          <TableSearch
+            onSearch={handleSearch}
+            placeholder="Search by test name or file..."
+          />
           <Button
             variant="outline"
             size="sm"
@@ -84,11 +132,19 @@ export function TestsTable({
               </>
             )}
           </Button>
-          <div className="text-sm text-muted-foreground">
-            Showing {filteredTests.length} of {tests.length} tests
-          </div>
         </div>
       </div>
+
+      <div className="mb-3 text-right text-sm text-muted-foreground">
+        Showing {currentItems.length} of {filteredTests.length} tests
+        {searchTerm && (
+          <span>
+            {" "}
+            matching "<strong>{searchTerm}</strong>"
+          </span>
+        )}
+      </div>
+
       <Card className="shadow-sm">
         <CardContent className="p-0">
           <Table>
@@ -103,139 +159,156 @@ export function TestsTable({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredTests.map((test: Test) => {
-                return (
-                  <TableRow
-                    key={test.id}
-                    className={
-                      test.manualOverride
-                        ? "bg-amber-50 dark:bg-amber-950/20"
-                        : ""
-                    }
-                  >
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <Link
-                          to={`/test/${test.id}?repo=${selectedRepo}`}
-                          className="hover:text-primary hover:underline"
-                        >
-                          {test.name}
-                        </Link>
-                        {test.manualOverride ? (
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <HandMetal className="h-4 w-4 text-amber-500" />
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>
-                                  Manually{" "}
-                                  {test.excluded ? "excluded" : "included"}
-                                </p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        ) : null}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      <div className="flex items-center">
-                        <span className="ml-2">{test.file}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <FlakeRateBadge
-                        rate={test.flakeRate}
-                        threshold={repository?.flakeThreshold || 5}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <FailureRateBadge
-                        rate={test.failureRate}
-                        threshold={repository?.failureThreshold || 10}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={test.excluded ? "destructive" : "success"}
-                        className={`font-medium ${test.manualOverride ? "border-2 border-amber-500" : ""}`}
-                      >
-                        {test.excluded ? "Excluded" : "Included"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end space-x-2">
-                        {test.jiraTicket ? (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="flex items-center gap-1 text-blue-600 dark:text-blue-400"
-                            asChild
+              {currentItems.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="h-24 text-center">
+                    No results found.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                currentItems.map((test: Test) => {
+                  return (
+                    <TableRow
+                      key={test.id}
+                      className={
+                        test.manualOverride
+                          ? "bg-amber-50 dark:bg-amber-950/20"
+                          : ""
+                      }
+                    >
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                          <Link
+                            to={`/test/${test.id}?repo=${selectedRepo}`}
+                            className="hover:text-primary hover:underline"
                           >
-                            <a
-                              href={test.jiraTicket.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
+                            {test.name}
+                          </Link>
+                          {test.manualOverride ? (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <HandMetal className="h-4 w-4 text-amber-500" />
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>
+                                    Manually{" "}
+                                    {test.excluded ? "excluded" : "included"}
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          ) : null}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        <div className="flex items-center">
+                          <span className="ml-2">{test.file}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <FlakeRateBadge
+                          rate={test.flakeRate}
+                          threshold={repository?.flakeThreshold || 5}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <FailureRateBadge
+                          rate={test.failureRate}
+                          threshold={repository?.failureThreshold || 10}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={test.excluded ? "destructive" : "success"}
+                          className={`font-medium ${test.manualOverride ? "border-2 border-amber-500" : ""}`}
+                        >
+                          {test.excluded ? "Excluded" : "Included"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end space-x-2">
+                          {test.jiraTicket ? (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex items-center gap-1 text-blue-600 dark:text-blue-400"
+                              asChild
                             >
-                              <ExternalLink className="h-3 w-3" />
-                              {test.jiraTicket.key}
-                            </a>
-                          </Button>
-                        ) : (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleCreateTicket(test)}
-                            className={
-                              test.flakeRate >
+                              <a
+                                href={test.jiraTicket.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <ExternalLink className="h-3 w-3" />
+                                {test.jiraTicket.key}
+                              </a>
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleCreateTicket(test)}
+                              className={
+                                test.flakeRate >
+                                  (repository?.flakeThreshold || 5) ||
+                                test.failureRate >
+                                  (repository?.failureThreshold || 10)
+                                  ? "text-yellow-600 dark:text-yellow-400"
+                                  : ""
+                              }
+                            >
+                              <Ticket className="mr-1 h-4 w-4" />
+                              {test.flakeRate >
                                 (repository?.flakeThreshold || 5) ||
                               test.failureRate >
                                 (repository?.failureThreshold || 10)
-                                ? "text-yellow-600 dark:text-yellow-400"
-                                : ""
-                            }
-                          >
-                            <Ticket className="mr-1 h-4 w-4" />
-                            {test.flakeRate >
-                              (repository?.flakeThreshold || 5) ||
-                            test.failureRate >
-                              (repository?.failureThreshold || 10)
-                              ? "Create Ticket (Needed)"
-                              : "Create Ticket"}
-                          </Button>
-                        )}
+                                ? "Create Ticket (Needed)"
+                                : "Create Ticket"}
+                            </Button>
+                          )}
 
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          asChild
-                          className="hover:bg-muted/50"
-                        >
-                          <Link
-                            to={`/toggle/${test.id}?current=${test.excluded ? "excluded" : "included"}&repo=${selectedRepo}`}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            asChild
+                            className="hover:bg-muted/50"
                           >
-                            {test.excluded ? (
-                              <>
-                                <ToggleRight className="mr-2 h-4 w-4" />
-                                Include
-                              </>
-                            ) : (
-                              <>
-                                <ToggleLeft className="mr-2 h-4 w-4" />
-                                Exclude
-                              </>
-                            )}
-                          </Link>
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+                            <Link
+                              to={`/toggle/${test.id}?current=${test.excluded ? "excluded" : "included"}&repo=${selectedRepo}`}
+                            >
+                              {test.excluded ? (
+                                <>
+                                  <ToggleRight className="mr-2 h-4 w-4" />
+                                  Include
+                                </>
+                              ) : (
+                                <>
+                                  <ToggleLeft className="mr-2 h-4 w-4" />
+                                  Exclude
+                                </>
+                              )}
+                            </Link>
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
             </TableBody>
           </Table>
         </CardContent>
       </Card>
+
+      {/* Show pagination only if there are more than one page */}
+      {totalPages > 1 && (
+        <TablePagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
+      )}
 
       <CreateTicketSheet
         isOpen={isCreateTicketOpen}
