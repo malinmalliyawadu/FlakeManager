@@ -15,26 +15,34 @@ flowchart LR
         Cypress Dashboard"]
         isFlaky{Is Test Flaky?}
         addSkip[Add .skip to Test]
+        createJira["Create JIRA Ticket
+        Manually via Dashboard"]
+        assignTeam[Assign to Team]
         createPR[Update PR]
         approvals["Request New
         Approvals"]
         reRun[Re-run Tests]
+        fixIssue["Fix Actual Issue
+        in the Test or Code"]
 
         ciStart --> ciRun
         ciRun --> ciFail
         ciFail --> checkDash
         checkDash --> isFlaky
         isFlaky -- Yes --> addSkip
-        addSkip --> createPR
+        addSkip --> createJira
+        createJira --> assignTeam
+        assignTeam --> createPR
         createPR --> approvals
         approvals --> reRun
-        isFlaky -- No --> createPR
+        isFlaky -- No --> fixIssue
+        fixIssue --> createPR
     end
 
     %% Styling - adjusted for dark mode readability
     classDef manual fill:#7D3C98,stroke:#ffffff,stroke-width:2px,color:#ffffff
 
-    class ciStart,ciRun,ciFail,checkDash,isFlaky,addSkip,createPR,approvals,reRun manual
+    class ciStart,ciRun,ciFail,checkDash,isFlaky,addSkip,createJira,assignTeam,createPR,approvals,reRun,fixIssue manual
 ```
 
 ## CI Integration Flow
@@ -150,14 +158,22 @@ The current manual approach to handling flaky tests:
 3. **Developer Investigates** by checking the Cypress Dashboard
 4. If determined to be **flaky**:
    - Developer manually adds `.skip` to the test
-   - Updates the PR with the change
+   - Creates a JIRA ticket manually via the Cypress Dashboard
+   - Assigns the ticket to the appropriate team for investigation
+   - Updates the PR with the skip change
    - Requests new approvals for the modified code
    - Re-runs the tests
-5. **Process Problems**:
+5. If the test is **not flaky** but has a genuine failure:
+   - Developer must fix the actual issue in the test or application code
+   - This can be time-consuming but is necessary for non-flaky failures
+6. **Process Problems**:
    - Wastes developer time on repeated manual interventions
    - Delays deployments while waiting for fixes and approvals
+   - Requires manual JIRA ticket creation and assignment
    - No systematic tracking of flaky tests
    - Inconsistent handling of test reliability issues
+   - Hard to differentiate between genuinely failing tests and flaky tests
+   - No centralized dashboard for managing flaky tests across repositories
 
 ### Automated Test Exclusion Process
 
@@ -178,7 +194,8 @@ The current manual approach to handling flaky tests:
 1. **Teams use the Flake Manager UI** to:
    - View flaky test metrics and status
    - Manually override exclusion decisions when needed
-   - Create JIRA tickets for tests that need developer attention
+   - Create JIRA tickets for tests that need developer attention with a single click
+   - Assign tickets to appropriate teams through integrated workflow
 2. **When overrides happen**:
    - Test exclusion status is stored in the database
    - Future CI runs will respect these manual decisions
