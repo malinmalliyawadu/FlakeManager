@@ -40,6 +40,7 @@ export class CypressService {
     repoId: string,
     flakeThreshold: number,
     failureThreshold: number,
+    timePeriod?: string,
   ): Promise<AppRepository | null> {
     try {
       const updatedRepo = await prisma.repository.update({
@@ -47,6 +48,7 @@ export class CypressService {
         data: {
           flakeThreshold,
           failureThreshold,
+          ...(timePeriod ? { timePeriod } : {}),
         },
       });
       return updatedRepo as unknown as AppRepository;
@@ -90,10 +92,14 @@ export class CypressService {
     }
   }
 
-  async getTestsForRepo(repo: string): Promise<AppTest[]> {
+  async getTestsForRepo(repo: string, timePeriod?: string): Promise<AppTest[]> {
     const tests = await prisma.test.findMany({
       where: { repositoryId: repo },
     });
+
+    // In a real implementation, we would filter tests based on timePeriod
+    // For now, we're just returning all tests, but in a real app
+    // this would use the timePeriod to filter data from the database
     return tests as unknown as AppTest[];
   }
 

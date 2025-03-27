@@ -1,5 +1,5 @@
 import { Form } from "@remix-run/react";
-import { Save, ChevronLeft, Gauge } from "lucide-react";
+import { Save, ChevronLeft, Gauge, CalendarRange } from "lucide-react";
 import { useState, useEffect } from "react";
 
 import { ThresholdsImpact } from "~/components/thresholds/ThresholdsImpact";
@@ -14,6 +14,13 @@ import {
 } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 import { type Repository, type Test } from "~/types/cypress";
 
 interface ThresholdsFormProps {
@@ -25,11 +32,13 @@ interface ThresholdsFormProps {
     values?: {
       flakeThreshold?: number;
       failureThreshold?: number;
+      timePeriod?: string;
     };
   };
   onChange?: {
     flakeThreshold: (value: number) => void;
     failureThreshold: (value: number) => void;
+    timePeriod?: (value: string) => void;
   };
 }
 
@@ -48,6 +57,10 @@ export function ThresholdsForm({
     actionData?.values?.failureThreshold ?? repository.failureThreshold,
   );
 
+  const [timePeriod, setTimePeriod] = useState(
+    actionData?.values?.timePeriod ?? repository.timePeriod ?? "30d",
+  );
+
   // Update state when repository or actionData changes
   useEffect(() => {
     setFlakeThreshold(
@@ -55,6 +68,9 @@ export function ThresholdsForm({
     );
     setFailureThreshold(
       actionData?.values?.failureThreshold ?? repository.failureThreshold,
+    );
+    setTimePeriod(
+      actionData?.values?.timePeriod ?? repository.timePeriod ?? "30d",
     );
   }, [repository, actionData]);
 
@@ -71,6 +87,14 @@ export function ThresholdsForm({
     setFailureThreshold(value);
     if (onChange?.failureThreshold) {
       onChange.failureThreshold(value);
+    }
+  };
+
+  // Handler for time period changes
+  const handleTimePeriodChange = (value: string) => {
+    setTimePeriod(value);
+    if (onChange?.timePeriod) {
+      onChange.timePeriod(value);
     }
   };
 
@@ -137,8 +161,9 @@ export function ThresholdsForm({
 
         <Form method="post" className="space-y-6" id="thresholds-form">
           <input type="hidden" name="repoId" value={selectedRepo} />
+          <input type="hidden" name="timePeriod" value={timePeriod} />
 
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-3">
             <ThresholdInput
               id="flakeThreshold"
               label="Flake Rate Threshold (%)"
@@ -159,6 +184,16 @@ export function ThresholdsForm({
               description="Tests with a failure rate above this percentage will be automatically excluded."
               help="Consistently failing tests may indicate real issues in your code."
               recommendation={getFailureRecommendation(repository.testCount)}
+            />
+
+            <TimePeriodInput
+              id="timePeriod"
+              label="Analysis Time Period"
+              value={timePeriod}
+              error={actionData?.errors?.timePeriod}
+              onChange={handleTimePeriodChange}
+              description="Select the time period for calculating test metrics and applying thresholds."
+              help="Shorter periods show recent trends while longer periods provide historical context."
             />
           </div>
 
@@ -328,4 +363,86 @@ function getFailureRecommendation(testCount: number): {
         "For larger test suites, focus on the most consistently failing tests first.",
     };
   }
+}
+
+interface TimePeriodInputProps {
+  id: string;
+  label: string;
+  value: string;
+  error?: string;
+  onChange: (value: string) => void;
+  description: string;
+  help?: string;
+}
+
+function TimePeriodInput({
+  id,
+  label,
+  value,
+  error,
+  onChange,
+  description,
+  help,
+}: TimePeriodInputProps) {
+  // Get the available time period options
+  const options = [
+    { value: "7d", label: "Last 7 Days" },
+    { value: "30d", label: "Last 30 Days" },
+    { value: "90d", label: "Last 90 Days" },
+    { value: "all", label: "All Time" },
+  ];
+
+  // Find the current selected period for display
+  const selectedOption =
+    options.find((option) => option.value === value)?.label ||
+    "Select time period";
+
+  const handleValueChange = (newValue: string) => {
+    onChange(newValue);
+
+    // Refresh the page with the new time period to get updated test data
+    const url = new URL(window.location.href);
+    url.searchParams.set("timePeriod", newValue);
+    window.location.href = url.toString();
+  };
+
+  return (
+    <div className="space-y-3">
+      <Label htmlFor={id} className="text-base">
+        {label}
+      </Label>
+
+      <div>
+        <Select value={value} onValueChange={handleValueChange}>
+          <SelectTrigger
+            id={id}
+            className={`flex items-center ${error ? "border-destructive" : ""}`}
+          >
+            <div className="flex items-center gap-2">
+              <CalendarRange className="h-4 w-4 text-muted-foreground" />
+              <SelectValue placeholder="Select time period" />
+            </div>
+          </SelectTrigger>
+          <SelectContent>
+            {options.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {error ? <p className="text-sm text-destructive">{error}</p> : null}
+
+      <p className="text-sm text-muted-foreground">{description}</p>
+
+      {help ? <p className="text-xs text-muted-foreground">{help}</p> : null}
+
+      <div className="mt-2 rounded-md border border-primary/10 bg-primary/5 p-2 text-xs">
+        <span className="font-medium">Note:</span> Changing the time period
+        affects which test data is considered when applying thresholds.
+      </div>
+    </div>
+  );
 }

@@ -45,6 +45,7 @@ model Repository {
   flakeThreshold   Float   @default(5.0)
   failureThreshold Float   @default(10.0)
   defaultJiraBoard String?
+  timePeriod       String? @default("30d")
   tests            Test[]
 
   createdAt DateTime @default(now())

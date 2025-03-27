@@ -21,6 +21,7 @@ export interface Repository {
   flakeThreshold: number;
   failureThreshold: number;
   defaultJiraBoard?: string;
+  timePeriod?: string; // Time period setting for threshold data (e.g., '7d', '30d', '90d', 'all')
 }
 
 export interface ApiResponse {
