@@ -109,7 +109,7 @@ export default function Repositories() {
         </Button>
       </div>
 
-      <Card className="shadow-sm">
+      <Card className="shadow-xs">
         <CardHeader>
           <div className="flex items-center space-x-2">
             <Database className="h-5 w-5 text-primary" />

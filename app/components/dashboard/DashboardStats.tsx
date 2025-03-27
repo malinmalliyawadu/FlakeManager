@@ -64,7 +64,7 @@ function StatsCard({
   valueClassName = "",
 }: StatsCardProps) {
   return (
-    <Card className="shadow-sm transition-shadow duration-200 hover:shadow-md">
+    <Card className="shadow-xs transition-shadow duration-200 hover:shadow-md">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
         {icon}

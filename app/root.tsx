@@ -32,6 +32,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const { repositories, selectedRepo } = useLoaderData<typeof loader>();
+
   return (
     <html lang="en" className="h-full antialiased">
       <head>
@@ -41,15 +43,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body className="h-full bg-background">
+      <body className="bg-background h-full">
         <ThemeProvider defaultTheme="system" storageKey="flake-manager-theme">
           <div className="flex min-h-screen flex-col">
-            {/* <AppHeader
+            <AppHeader
               repositories={repositories}
               selectedRepo={selectedRepo}
-            /> */}
+            />
 
-            <main className="flex-1 bg-background">
+            <main className="bg-background flex-1">
               <div className="mx-auto max-w-screen-xl px-4 py-8 md:px-8">
                 {children}
               </div>

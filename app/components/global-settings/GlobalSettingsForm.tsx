@@ -240,7 +240,7 @@ export function GlobalSettingsForm({
   };
 
   return (
-    <Card className="shadow-sm">
+    <Card className="shadow-xs">
       <CardHeader>
         <div className="flex items-center space-x-2">
           <Gauge className="h-5 w-5 text-primary" />

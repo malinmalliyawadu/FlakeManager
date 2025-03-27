@@ -25,7 +25,7 @@ export function ThresholdsCard({
   const failureThreshold = repository?.failureThreshold || 10;
 
   return (
-    <Card className="shadow-sm">
+    <Card className="shadow-xs">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
