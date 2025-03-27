@@ -4,7 +4,13 @@ import {
   useNavigate,
   useSearchParams,
 } from "@remix-run/react";
-import { Database, Gauge, LayoutDashboard, Snowflake } from "lucide-react";
+import {
+  Database,
+  Gauge,
+  LayoutDashboard,
+  Snowflake,
+  Settings,
+} from "lucide-react";
 
 import {
   Select,
@@ -37,6 +43,7 @@ export function AppHeader({ repositories, selectedRepo }: AppHeaderProps) {
   const isDashboardActive = isActive("/dashboard");
   const isThresholdsActive = isActive("/thresholds");
   const isRepositoriesActive = isActive("/repositories");
+  const isGlobalSettingsActive = location.pathname === "/global-settings";
 
   const handleRepoChange = (value: string) => {
     // Create a new URLSearchParams instance from the current ones
@@ -68,7 +75,7 @@ export function AppHeader({ repositories, selectedRepo }: AppHeaderProps) {
                 </span>
               </div>
             </Link>
-            <nav className="flex items-center gap-10 text-sm">
+            <nav className="flex items-center gap-2 text-sm">
               <Link
                 to={`/dashboard?repo=${selectedRepo}`}
                 className={cn(
@@ -178,6 +185,46 @@ export function AppHeader({ repositories, selectedRepo }: AppHeaderProps) {
                   className={cn(
                     "h-[2px] w-full rounded-full bg-blue-500 transition-transform duration-200 dark:bg-blue-400",
                     isRepositoriesActive
+                      ? "scale-100"
+                      : "scale-0 group-hover:scale-100",
+                  )}
+                />
+              </Link>
+              <Link
+                to="/global-settings"
+                className={cn(
+                  "group flex flex-col items-center gap-1.5 pt-1",
+                  isGlobalSettingsActive && "pointer-events-none",
+                )}
+              >
+                <div
+                  className={cn(
+                    "flex h-8 w-8 items-center justify-center rounded-full p-1.5 transition-all duration-200",
+                    isGlobalSettingsActive
+                      ? "bg-blue-100 text-blue-700 shadow-sm dark:bg-blue-900/40 dark:text-blue-400"
+                      : "bg-blue-100/50 text-blue-600 group-hover:bg-blue-100 group-hover:text-blue-700 dark:bg-blue-900/20 dark:text-blue-500 dark:group-hover:bg-blue-900/40 dark:group-hover:text-blue-400",
+                  )}
+                >
+                  <Settings className="h-full w-full" />
+                </div>
+                <span
+                  className={cn(
+                    "w-20 text-center text-xs font-medium transition-colors",
+                    isGlobalSettingsActive
+                      ? "text-blue-600 dark:text-blue-400"
+                      : "text-muted-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400",
+                  )}
+                >
+                  <span
+                    className={isGlobalSettingsActive ? "font-semibold" : ""}
+                  >
+                    Settings
+                  </span>
+                </span>
+                <div
+                  className={cn(
+                    "h-[2px] w-full rounded-full bg-blue-500 transition-transform duration-200 dark:bg-blue-400",
+                    isGlobalSettingsActive
                       ? "scale-100"
                       : "scale-0 group-hover:scale-100",
                   )}

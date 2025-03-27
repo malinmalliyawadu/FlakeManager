@@ -29,3 +29,40 @@ export interface ApiResponse {
   data?: Test[];
   message?: string;
 }
+
+export interface GlobalSettings {
+  id: string;
+  flakeRecommendations: {
+    small: {
+      threshold: number;
+      description: string;
+    };
+    medium: {
+      threshold: number;
+      description: string;
+    };
+    large: {
+      threshold: number;
+      description: string;
+    };
+  };
+  failureRecommendations: {
+    small: {
+      threshold: number;
+      description: string;
+    };
+    medium: {
+      threshold: number;
+      description: string;
+    };
+    large: {
+      threshold: number;
+      description: string;
+    };
+  };
+  guardrails: {
+    maxExcludedTests: number;
+    maxExcludedTestsPercentage: number;
+    requireJiraTicket: boolean;
+  };
+}

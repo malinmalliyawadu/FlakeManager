@@ -72,3 +72,13 @@ model Test {
 
   @@index([repositoryId])
 }
+
+model GlobalSettings {
+  id                      String @id @default("global")
+  flakeRecommendations    Json
+  failureRecommendations  Json
+  guardrails              Json
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

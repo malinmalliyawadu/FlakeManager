@@ -1,6 +1,7 @@
 import {
   type Repository as AppRepository,
   type Test as AppTest,
+  type GlobalSettings as AppGlobalSettings,
 } from "~/types/cypress";
 import { prisma } from "~/db.server";
 
@@ -143,6 +144,46 @@ export class CypressService {
     } catch (error) {
       console.error(`Error toggling test exclusion: ${error}`);
       return null;
+    }
+  }
+
+  // Global settings methods
+  async getGlobalSettings(): Promise<AppGlobalSettings | null> {
+    try {
+      const settings = await prisma.globalSettings.findUnique({
+        where: { id: "global" },
+      });
+
+      return settings as unknown as AppGlobalSettings | null;
+    } catch (error) {
+      console.error(`Error getting global settings: ${error}`);
+      return null;
+    }
+  }
+
+  async updateGlobalSettings(
+    globalSettings: AppGlobalSettings,
+  ): Promise<boolean> {
+    try {
+      await prisma.globalSettings.upsert({
+        where: { id: "global" },
+        update: {
+          flakeRecommendations: globalSettings.flakeRecommendations,
+          failureRecommendations: globalSettings.failureRecommendations,
+          guardrails: globalSettings.guardrails,
+        },
+        create: {
+          id: "global",
+          flakeRecommendations: globalSettings.flakeRecommendations,
+          failureRecommendations: globalSettings.failureRecommendations,
+          guardrails: globalSettings.guardrails,
+        },
+      });
+
+      return true;
+    } catch (error) {
+      console.error(`Error updating global settings: ${error}`);
+      return false;
     }
   }
 }
