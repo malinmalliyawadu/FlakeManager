@@ -1,16 +1,5 @@
-import {
-  Link,
-  useLocation,
-  useNavigate,
-  useSearchParams,
-} from "@remix-run/react";
-import {
-  Database,
-  Gauge,
-  LayoutDashboard,
-  Snowflake,
-  Settings,
-} from "lucide-react";
+import { useLocation, useNavigate, useSearchParams } from "@remix-run/react";
+import { Database, Gauge, LayoutDashboard, Settings } from "lucide-react";
 
 import {
   Select,
@@ -19,6 +8,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import { NavLink } from "~/components/ui/nav-link";
+import { AppLogo } from "~/components/ui/app-logo";
 import { cn } from "~/lib/utils";
 import { type Repository } from "~/types/cypress";
 
@@ -59,177 +50,32 @@ export function AppHeader({ repositories, selectedRepo }: AppHeaderProps) {
       <div className="mx-auto max-w-screen-xl px-4 pt-1 md:px-8">
         <div className="flex h-16 items-center">
           <div className="mr-4 flex items-center">
-            <Link
-              to="/dashboard"
-              className="group mr-10 flex items-center gap-3 transition-colors hover:opacity-90"
-            >
-              <div className="flex h-10 w-10 items-center justify-center rounded-md bg-gradient-to-br from-blue-500 to-cyan-300 shadow-sm transition-all duration-300 ease-in-out group-hover:shadow-md">
-                <Snowflake className="h-6 w-6 text-white drop-shadow-sm transition-transform duration-700 ease-in-out group-hover:rotate-180" />
-              </div>
-              <div className="flex flex-col justify-center">
-                <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-xl font-extrabold leading-none tracking-tight text-transparent dark:from-blue-400 dark:to-cyan-300">
-                  Flake Manager
-                </span>
-                <span className="mt-1 text-[10px] font-medium tracking-wide text-muted-foreground">
-                  CYPRESS SUITE MANAGEMENT
-                </span>
-              </div>
-            </Link>
+            <AppLogo />
             <nav className="flex items-center gap-5 text-sm">
-              <Link
+              <NavLink
                 to={`/dashboard?repo=${selectedRepo}`}
-                className={cn(
-                  "group flex flex-col items-center gap-1.5 pt-1",
-                  isDashboardActive && "pointer-events-none",
-                )}
-              >
-                <div
-                  className={cn(
-                    "flex h-8 w-8 items-center justify-center rounded-full p-1.5 transition-all duration-200",
-                    isDashboardActive
-                      ? "bg-blue-100 text-blue-700 shadow-sm dark:bg-blue-900/40 dark:text-blue-400"
-                      : "bg-blue-100/50 text-blue-600 group-hover:bg-blue-100 group-hover:text-blue-700 dark:bg-blue-900/20 dark:text-blue-500 dark:group-hover:bg-blue-900/40 dark:group-hover:text-blue-400",
-                  )}
-                >
-                  <LayoutDashboard className="h-full w-full" />
-                </div>
-                <span
-                  className={cn(
-                    "w-16 text-center text-xs font-medium transition-colors",
-                    isDashboardActive
-                      ? "text-blue-600 dark:text-blue-400"
-                      : "text-muted-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400",
-                  )}
-                >
-                  <span className={isDashboardActive ? "font-semibold" : ""}>
-                    Dashboard
-                  </span>
-                </span>
-                <div
-                  className={cn(
-                    "h-[2px] w-full rounded-full bg-blue-500 transition-transform duration-200 dark:bg-blue-400",
-                    isDashboardActive
-                      ? "scale-100"
-                      : "scale-0 group-hover:scale-100",
-                  )}
-                />
-              </Link>
-              <Link
+                icon={LayoutDashboard}
+                label="Dashboard"
+                isActive={isDashboardActive}
+              />
+              <NavLink
                 to={`/thresholds?repo=${selectedRepo}`}
-                className={cn(
-                  "group flex flex-col items-center gap-1.5 pt-1",
-                  isThresholdsActive && "pointer-events-none",
-                )}
-              >
-                <div
-                  className={cn(
-                    "flex h-8 w-8 items-center justify-center rounded-full p-1.5 transition-all duration-200",
-                    isThresholdsActive
-                      ? "bg-blue-100 text-blue-700 shadow-sm dark:bg-blue-900/40 dark:text-blue-400"
-                      : "bg-blue-100/50 text-blue-600 group-hover:bg-blue-100 group-hover:text-blue-700 dark:bg-blue-900/20 dark:text-blue-500 dark:group-hover:bg-blue-900/40 dark:group-hover:text-blue-400",
-                  )}
-                >
-                  <Gauge className="h-full w-full" />
-                </div>
-                <span
-                  className={cn(
-                    "w-16 text-center text-xs font-medium transition-colors",
-                    isThresholdsActive
-                      ? "text-blue-600 dark:text-blue-400"
-                      : "text-muted-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400",
-                  )}
-                >
-                  <span className={isThresholdsActive ? "font-semibold" : ""}>
-                    Thresholds
-                  </span>
-                </span>
-                <div
-                  className={cn(
-                    "h-[2px] w-full rounded-full bg-blue-500 transition-transform duration-200 dark:bg-blue-400",
-                    isThresholdsActive
-                      ? "scale-100"
-                      : "scale-0 group-hover:scale-100",
-                  )}
-                />
-              </Link>
-              <Link
+                icon={Gauge}
+                label="Thresholds"
+                isActive={isThresholdsActive}
+              />
+              <NavLink
                 to="/repositories"
-                className={cn(
-                  "group flex flex-col items-center gap-1.5 pt-1",
-                  isRepositoriesActive && "pointer-events-none",
-                )}
-              >
-                <div
-                  className={cn(
-                    "flex h-8 w-8 items-center justify-center rounded-full p-1.5 transition-all duration-200",
-                    isRepositoriesActive
-                      ? "bg-blue-100 text-blue-700 shadow-sm dark:bg-blue-900/40 dark:text-blue-400"
-                      : "bg-blue-100/50 text-blue-600 group-hover:bg-blue-100 group-hover:text-blue-700 dark:bg-blue-900/20 dark:text-blue-500 dark:group-hover:bg-blue-900/40 dark:group-hover:text-blue-400",
-                  )}
-                >
-                  <Database className="h-full w-full" />
-                </div>
-                <span
-                  className={cn(
-                    "w-20 text-center text-xs font-medium transition-colors",
-                    isRepositoriesActive
-                      ? "text-blue-600 dark:text-blue-400"
-                      : "text-muted-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400",
-                  )}
-                >
-                  <span className={isRepositoriesActive ? "font-semibold" : ""}>
-                    Repositories
-                  </span>
-                </span>
-                <div
-                  className={cn(
-                    "h-[2px] w-full rounded-full bg-blue-500 transition-transform duration-200 dark:bg-blue-400",
-                    isRepositoriesActive
-                      ? "scale-100"
-                      : "scale-0 group-hover:scale-100",
-                  )}
-                />
-              </Link>
-              <Link
+                icon={Database}
+                label="Repositories"
+                isActive={isRepositoriesActive}
+              />
+              <NavLink
                 to="/global-settings"
-                className={cn(
-                  "group flex flex-col items-center gap-1.5 pt-1",
-                  isGlobalSettingsActive && "pointer-events-none",
-                )}
-              >
-                <div
-                  className={cn(
-                    "flex h-8 w-8 items-center justify-center rounded-full p-1.5 transition-all duration-200",
-                    isGlobalSettingsActive
-                      ? "bg-blue-100 text-blue-700 shadow-sm dark:bg-blue-900/40 dark:text-blue-400"
-                      : "bg-blue-100/50 text-blue-600 group-hover:bg-blue-100 group-hover:text-blue-700 dark:bg-blue-900/20 dark:text-blue-500 dark:group-hover:bg-blue-900/40 dark:group-hover:text-blue-400",
-                  )}
-                >
-                  <Settings className="h-full w-full" />
-                </div>
-                <span
-                  className={cn(
-                    "w-20 text-center text-xs font-medium transition-colors",
-                    isGlobalSettingsActive
-                      ? "text-blue-600 dark:text-blue-400"
-                      : "text-muted-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400",
-                  )}
-                >
-                  <span
-                    className={isGlobalSettingsActive ? "font-semibold" : ""}
-                  >
-                    Settings
-                  </span>
-                </span>
-                <div
-                  className={cn(
-                    "h-[2px] w-full rounded-full bg-blue-500 transition-transform duration-200 dark:bg-blue-400",
-                    isGlobalSettingsActive
-                      ? "scale-100"
-                      : "scale-0 group-hover:scale-100",
-                  )}
-                />
-              </Link>
+                icon={Settings}
+                label="Settings"
+                isActive={isGlobalSettingsActive}
+              />
             </nav>
           </div>
           <div className="ml-auto flex items-center gap-4">
