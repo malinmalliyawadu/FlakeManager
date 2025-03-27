@@ -39,10 +39,10 @@ interface ThresholdsFormProps {
     failureThreshold: (value: number) => void;
     timePeriod?: (value: string) => void;
   };
-  thresholdValues: {
-    flakeThreshold: number;
-    failureThreshold: number;
-    timePeriod: string;
+  thresholdValues?: {
+    flakeThreshold?: number;
+    failureThreshold?: number;
+    timePeriod?: string;
   };
 }
 
@@ -54,8 +54,9 @@ export function ThresholdsForm({
   onChange,
   thresholdValues,
 }: ThresholdsFormProps) {
-  // Use the values directly from thresholdValues prop
-  const { flakeThreshold, failureThreshold, timePeriod } = thresholdValues;
+  const flakeThreshold = thresholdValues?.flakeThreshold ?? 0;
+  const failureThreshold = thresholdValues?.failureThreshold ?? 0;
+  const timePeriod = thresholdValues?.timePeriod ?? "30d";
 
   // Handler for flake threshold changes
   const handleFlakeThresholdChange = (value: number) => {
