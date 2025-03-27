@@ -110,14 +110,22 @@ export class CypressService {
     repo = "demo-repo",
   ): Promise<AppTest | null> {
     try {
+      console.log(
+        `toggleTestExclusion called with testId=${testId}, excluded=${excluded}, repo=${repo}`,
+      );
+
       // Get the test and repository info
       const test = await prisma.test.findUnique({
         where: { id: testId },
       });
 
+      console.log("Found test from database:", test);
+
       if (!test) return null;
 
       const repository = await this.getRepository(repo);
+      console.log("Repository info:", repository);
+
       const flakeThreshold = repository?.flakeThreshold || 5;
       const failureThreshold = repository?.failureThreshold || 10;
 
@@ -131,16 +139,30 @@ export class CypressService {
         (wouldExceedThreshold && !excluded) ||
         (!wouldExceedThreshold && excluded);
 
-      // Update the test
-      const updatedTest = await prisma.test.update({
-        where: { id: testId },
-        data: {
-          excluded,
-          manualOverride: isManualOverride,
-        },
+      console.log("Update logic:", {
+        wouldExceedThreshold,
+        isManualOverride,
+        newExcluded: excluded,
       });
 
-      return updatedTest as unknown as AppTest;
+      // Update the test
+      console.log("Attempting to update test in database...");
+
+      try {
+        const updatedTest = await prisma.test.update({
+          where: { id: testId },
+          data: {
+            excluded,
+            manualOverride: isManualOverride,
+          },
+        });
+
+        console.log("Database update successful:", updatedTest);
+        return updatedTest as unknown as AppTest;
+      } catch (dbError) {
+        console.error("Database update error:", dbError);
+        throw dbError;
+      }
     } catch (error) {
       console.error(`Error toggling test exclusion: ${error}`);
       return null;

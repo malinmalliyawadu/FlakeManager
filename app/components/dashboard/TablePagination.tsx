@@ -73,12 +73,20 @@ export function TablePagination({
 
   const pageNumbers = getPageNumbers();
 
+  // Handle page navigation
+  const handlePageClick = (page: number, e: React.MouseEvent) => {
+    e.preventDefault();
+    if (page !== currentPage) {
+      onPageChange(page);
+    }
+  };
+
   return (
     <Pagination className="mt-4">
       <PaginationContent>
         <PaginationItem>
           <PaginationPrevious
-            onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+            onClick={(e) => handlePageClick(Math.max(1, currentPage - 1), e)}
             className={
               currentPage === 1 ? "pointer-events-none opacity-50" : ""
             }
@@ -100,10 +108,7 @@ export function TablePagination({
               <PaginationLink
                 href="#"
                 isActive={currentPage === page}
-                onClick={(e) => {
-                  e.preventDefault();
-                  onPageChange(page as number);
-                }}
+                onClick={(e) => handlePageClick(page as number, e)}
               >
                 {page}
               </PaginationLink>
@@ -113,7 +118,9 @@ export function TablePagination({
 
         <PaginationItem>
           <PaginationNext
-            onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+            onClick={(e) =>
+              handlePageClick(Math.min(totalPages, currentPage + 1), e)
+            }
             className={
               currentPage === totalPages ? "pointer-events-none opacity-50" : ""
             }

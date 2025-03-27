@@ -1,4 +1,10 @@
-import { Link } from "@remix-run/react";
+import {
+  Link,
+  Form,
+  useFetcher,
+  useNavigation,
+  useSearchParams,
+} from "@remix-run/react";
 import {
   ToggleLeft,
   ToggleRight,
@@ -8,7 +14,7 @@ import {
   Ticket,
   ExternalLink,
 } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 
 import { CreateTicketSheet } from "~/components/jira/CreateTicketSheet";
 import { TablePagination } from "~/components/dashboard/TablePagination";
@@ -43,25 +49,40 @@ export function TestsTable({
   repository,
   selectedRepo,
 }: TestsTableProps) {
+  // Simple state-based pagination
+  const [pageNum, setPageNum] = useState(1);
   const [showOnlyExceededThreshold, setShowOnlyExceededThreshold] =
     useState(false);
   const [isCreateTicketOpen, setIsCreateTicketOpen] = useState(false);
   const [selectedTest, setSelectedTest] = useState<Test | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+
+  // For tracking toggle operations
+  const toggleFetcher = useFetcher();
+  const [pendingToggleIds, setPendingToggleIds] = useState<string[]>([]);
+
+  // Effect to clear pending toggles when fetcher completes
+  useEffect(() => {
+    if (toggleFetcher.state === "idle" && toggleFetcher.data) {
+      setPendingToggleIds([]);
+    }
+  }, [toggleFetcher.state, toggleFetcher.data]);
 
   // Filter tests based on threshold and search term
   const filteredTests = useMemo(() => {
-    let filtered = showOnlyExceededThreshold
-      ? tests.filter(
-          (test) =>
-            test.flakeRate > (repository?.flakeThreshold || 5) ||
-            test.failureRate > (repository?.failureThreshold || 10),
-        )
-      : tests;
+    let filtered = tests;
 
-    // Apply search filter if searchTerm exists
+    // Apply threshold filter
+    if (showOnlyExceededThreshold) {
+      filtered = filtered.filter(
+        (test) =>
+          test.flakeRate > (repository?.flakeThreshold || 5) ||
+          test.failureRate > (repository?.failureThreshold || 10),
+      );
+    }
+
+    // Apply search filter
     if (searchTerm.trim() !== "") {
       const lowerSearchTerm = searchTerm.toLowerCase();
       filtered = filtered.filter(
@@ -80,24 +101,49 @@ export function TestsTable({
     Math.ceil(filteredTests.length / itemsPerPage),
   );
 
+  // Ensure current page is valid
+  const validPageNum = Math.min(Math.max(1, pageNum), totalPages);
+
+  // Reset page when filters change the number of results
+  useEffect(() => {
+    if (validPageNum !== pageNum) {
+      setPageNum(validPageNum);
+    }
+  }, [validPageNum, pageNum]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setPageNum(1);
+  }, [showOnlyExceededThreshold, searchTerm]);
+
   // Get current page items
   const currentItems = useMemo(() => {
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    return filteredTests.slice(indexOfFirstItem, indexOfLastItem);
-  }, [filteredTests, currentPage, itemsPerPage]);
+    const startIndex = (validPageNum - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredTests.slice(startIndex, endIndex);
+  }, [filteredTests, validPageNum, itemsPerPage]);
 
-  // Handle page change
-  const handlePageChange = (pageNumber: number) => {
-    setCurrentPage(pageNumber);
+  // Handle page change from pagination component
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setPageNum(newPage);
+    }
   };
 
   // Handle search
   const handleSearch = (term: string) => {
     setSearchTerm(term);
-    setCurrentPage(1); // Reset to first page when searching
+    // Page reset handled by the useEffect
   };
 
+  // Handle toggle form submission
+  const handleToggleSubmit = (testId: string) => {
+    if (!pendingToggleIds.includes(testId)) {
+      setPendingToggleIds([...pendingToggleIds, testId]);
+    }
+  };
+
+  // Handle ticket creation
   const handleCreateTicket = (test: Test) => {
     setSelectedTest(test);
     setIsCreateTicketOpen(true);
@@ -167,6 +213,8 @@ export function TestsTable({
                 </TableRow>
               ) : (
                 currentItems.map((test: Test) => {
+                  const isTogglePending = pendingToggleIds.includes(test.id);
+
                   return (
                     <TableRow
                       key={test.id}
@@ -207,16 +255,43 @@ export function TestsTable({
                         </div>
                       </TableCell>
                       <TableCell>
-                        <FlakeRateBadge
-                          rate={test.flakeRate}
-                          threshold={repository?.flakeThreshold || 5}
-                        />
+                        <div className="flex items-center">
+                          <div
+                            className={`rounded-md px-2 py-1 text-xs font-medium ${
+                              test.flakeRate > (repository?.flakeThreshold || 5)
+                                ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+                                : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                            }`}
+                          >
+                            {test.flakeRate}%
+                          </div>
+                          {test.flakeRate >
+                          (repository?.flakeThreshold || 5) ? (
+                            <span className="ml-2 text-xs text-muted-foreground">
+                              (&gt;{repository?.flakeThreshold || 5}%)
+                            </span>
+                          ) : null}
+                        </div>
                       </TableCell>
                       <TableCell>
-                        <FailureRateBadge
-                          rate={test.failureRate}
-                          threshold={repository?.failureThreshold || 10}
-                        />
+                        <div className="flex items-center">
+                          <div
+                            className={`rounded-md px-2 py-1 text-xs font-medium ${
+                              test.failureRate >
+                              (repository?.failureThreshold || 10)
+                                ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+                                : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                            }`}
+                          >
+                            {test.failureRate}%
+                          </div>
+                          {test.failureRate >
+                          (repository?.failureThreshold || 10) ? (
+                            <span className="ml-2 text-xs text-muted-foreground">
+                              (&gt;{repository?.failureThreshold || 10}%)
+                            </span>
+                          ) : null}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <Badge
@@ -244,7 +319,7 @@ export function TestsTable({
                                 {test.jiraTicket.key}
                               </a>
                             </Button>
-                          ) : (
+                          ) : test.excluded ? (
                             <Button
                               variant="outline"
                               size="sm"
@@ -266,16 +341,33 @@ export function TestsTable({
                                 ? "Create Ticket (Needed)"
                                 : "Create Ticket"}
                             </Button>
-                          )}
+                          ) : null}
 
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            asChild
-                            className="hover:bg-muted/50"
+                          <toggleFetcher.Form
+                            method="post"
+                            action={`/toggle/${test.id}`}
+                            preventScrollReset
+                            onSubmit={() => handleToggleSubmit(test.id)}
                           >
-                            <Link
-                              to={`/toggle/${test.id}?current=${test.excluded ? "excluded" : "included"}&repo=${selectedRepo}`}
+                            <input
+                              type="hidden"
+                              name="current"
+                              value={test.excluded ? "excluded" : "included"}
+                            />
+                            <input
+                              type="hidden"
+                              name="repo"
+                              value={selectedRepo}
+                            />
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="hover:bg-muted/50"
+                              type="submit"
+                              disabled={
+                                isTogglePending ||
+                                toggleFetcher.state === "submitting"
+                              }
                             >
                               {test.excluded ? (
                                 <>
@@ -288,8 +380,8 @@ export function TestsTable({
                                   Exclude
                                 </>
                               )}
-                            </Link>
-                          </Button>
+                            </Button>
+                          </toggleFetcher.Form>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -304,7 +396,7 @@ export function TestsTable({
       {/* Show pagination only if there are more than one page */}
       {totalPages > 1 && (
         <TablePagination
-          currentPage={currentPage}
+          currentPage={validPageNum}
           totalPages={totalPages}
           onPageChange={handlePageChange}
         />
@@ -316,64 +408,6 @@ export function TestsTable({
         test={selectedTest}
         repositoryId={selectedRepo}
       />
-    </div>
-  );
-}
-
-function FlakeRateBadge({
-  rate,
-  threshold,
-}: {
-  rate: number;
-  threshold: number;
-}) {
-  const isExceeded = rate > threshold;
-
-  return (
-    <div className="flex items-center">
-      <div
-        className={`rounded-md px-2 py-1 text-xs font-medium ${
-          isExceeded
-            ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
-            : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-        }`}
-      >
-        {rate}%
-      </div>
-      {isExceeded ? (
-        <span className="ml-2 text-xs text-muted-foreground">
-          (&gt;{threshold}%)
-        </span>
-      ) : null}
-    </div>
-  );
-}
-
-function FailureRateBadge({
-  rate,
-  threshold,
-}: {
-  rate: number;
-  threshold: number;
-}) {
-  const isExceeded = rate > threshold;
-
-  return (
-    <div className="flex items-center">
-      <div
-        className={`rounded-md px-2 py-1 text-xs font-medium ${
-          isExceeded
-            ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
-            : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-        }`}
-      >
-        {rate}%
-      </div>
-      {isExceeded ? (
-        <span className="ml-2 text-xs text-muted-foreground">
-          (&gt;{threshold}%)
-        </span>
-      ) : null}
     </div>
   );
 }
