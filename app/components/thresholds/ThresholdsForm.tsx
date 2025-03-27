@@ -1,6 +1,5 @@
 import { Form, useNavigate } from "react-router";
 import { Save, ChevronLeft, Gauge, CalendarRange } from "lucide-react";
-import { useState, useEffect } from "react";
 
 import { ThresholdsImpact } from "~/components/thresholds/ThresholdsImpact";
 import { Button } from "~/components/ui/button";
@@ -40,6 +39,11 @@ interface ThresholdsFormProps {
     failureThreshold: (value: number) => void;
     timePeriod?: (value: string) => void;
   };
+  thresholdValues: {
+    flakeThreshold: number;
+    failureThreshold: number;
+    timePeriod: string;
+  };
 }
 
 export function ThresholdsForm({
@@ -48,35 +52,13 @@ export function ThresholdsForm({
   tests,
   actionData,
   onChange,
+  thresholdValues,
 }: ThresholdsFormProps) {
-  const [flakeThreshold, setFlakeThreshold] = useState(
-    actionData?.values?.flakeThreshold ?? repository.flakeThreshold,
-  );
-
-  const [failureThreshold, setFailureThreshold] = useState(
-    actionData?.values?.failureThreshold ?? repository.failureThreshold,
-  );
-
-  const [timePeriod, setTimePeriod] = useState(
-    actionData?.values?.timePeriod ?? repository.timePeriod ?? "30d",
-  );
-
-  // Update state when repository or actionData changes
-  useEffect(() => {
-    setFlakeThreshold(
-      actionData?.values?.flakeThreshold ?? repository.flakeThreshold,
-    );
-    setFailureThreshold(
-      actionData?.values?.failureThreshold ?? repository.failureThreshold,
-    );
-    setTimePeriod(
-      actionData?.values?.timePeriod ?? repository.timePeriod ?? "30d",
-    );
-  }, [repository, actionData]);
+  // Use the values directly from thresholdValues prop
+  const { flakeThreshold, failureThreshold, timePeriod } = thresholdValues;
 
   // Handler for flake threshold changes
   const handleFlakeThresholdChange = (value: number) => {
-    setFlakeThreshold(value);
     if (onChange?.flakeThreshold) {
       onChange.flakeThreshold(value);
     }
@@ -84,7 +66,6 @@ export function ThresholdsForm({
 
   // Handler for failure threshold changes
   const handleFailureThresholdChange = (value: number) => {
-    setFailureThreshold(value);
     if (onChange?.failureThreshold) {
       onChange.failureThreshold(value);
     }
@@ -92,7 +73,6 @@ export function ThresholdsForm({
 
   // Handler for time period changes
   const handleTimePeriodChange = (value: string) => {
-    setTimePeriod(value);
     if (onChange?.timePeriod) {
       onChange.timePeriod(value);
     }
@@ -104,7 +84,7 @@ export function ThresholdsForm({
     <Card className="shadow-xs">
       <CardHeader>
         <div className="flex items-center space-x-2">
-          <Gauge className="h-5 w-5 text-primary" />
+          <Gauge className="text-primary h-5 w-5" />
           <CardTitle>Threshold Settings</CardTitle>
         </div>
         <CardDescription>
@@ -116,7 +96,7 @@ export function ThresholdsForm({
       <CardContent className="space-y-6">
         {/* Impact Preview Section */}
         <div
-          className={`rounded-lg border border-muted p-4 ${
+          className={`border-muted rounded-lg border p-4 ${
             flakeThreshold !== repository.flakeThreshold ||
             failureThreshold !== repository.failureThreshold
               ? "bg-amber-50 dark:bg-amber-950/20"
@@ -143,7 +123,7 @@ export function ThresholdsForm({
             </div>
             <div>
               <h3 className="text-base font-medium">Impact Preview</h3>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 {flakeThreshold !== repository.flakeThreshold ||
                 failureThreshold !== repository.failureThreshold
                   ? "Preview of your threshold changes"
@@ -199,16 +179,16 @@ export function ThresholdsForm({
             />
           </div>
 
-          <div className="space-y-3 rounded-md border bg-muted/50 p-4">
+          <div className="bg-muted/50 space-y-3 rounded-md border p-4">
             <h3 className="font-medium">
               What happens when a test is excluded?
             </h3>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               When a test is excluded, it won&apos;t run during your CI
               pipeline. This helps maintain reliable builds while you
               investigate and fix the root causes of flakiness or failures.
             </p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               You can manually override these settings for individual tests from
               the dashboard.
             </p>
@@ -300,14 +280,14 @@ function ThresholdInput({
         <span className="text-lg font-medium">%</span>
       </div>
 
-      {error ? <p className="text-sm text-destructive">{error}</p> : null}
+      {error ? <p className="text-destructive text-sm">{error}</p> : null}
 
-      <p className="text-sm text-muted-foreground">{description}</p>
+      <p className="text-muted-foreground text-sm">{description}</p>
 
-      {help ? <p className="text-xs text-muted-foreground">{help}</p> : null}
+      {help ? <p className="text-muted-foreground text-xs">{help}</p> : null}
 
       {recommendation ? (
-        <div className="mt-2 rounded-md border border-primary/10 bg-primary/5 p-2 text-xs">
+        <div className="border-primary/10 bg-primary/5 mt-2 rounded-md border p-2 text-xs">
           <span className="font-medium">Recommendation:</span>{" "}
           {recommendation.value}% - {recommendation.description}
         </div>
@@ -422,7 +402,7 @@ function TimePeriodInput({
             className={`flex items-center ${error ? "border-destructive" : ""}`}
           >
             <div className="flex items-center gap-2">
-              <CalendarRange className="h-4 w-4 text-muted-foreground" />
+              <CalendarRange className="text-muted-foreground h-4 w-4" />
               <SelectValue placeholder="Select time period" />
             </div>
           </SelectTrigger>
@@ -436,13 +416,13 @@ function TimePeriodInput({
         </Select>
       </div>
 
-      {error ? <p className="text-sm text-destructive">{error}</p> : null}
+      {error ? <p className="text-destructive text-sm">{error}</p> : null}
 
-      <p className="text-sm text-muted-foreground">{description}</p>
+      <p className="text-muted-foreground text-sm">{description}</p>
 
-      {help ? <p className="text-xs text-muted-foreground">{help}</p> : null}
+      {help ? <p className="text-muted-foreground text-xs">{help}</p> : null}
 
-      <div className="mt-2 rounded-md border border-primary/10 bg-primary/5 p-2 text-xs">
+      <div className="border-primary/10 bg-primary/5 mt-2 rounded-md border p-2 text-xs">
         <span className="font-medium">Note:</span> Changing the time period
         affects which test data is considered when applying thresholds.
       </div>

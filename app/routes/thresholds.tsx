@@ -4,7 +4,7 @@ import {
   type LoaderFunctionArgs,
 } from "react-router";
 import { useActionData, useLoaderData } from "react-router";
-import { useState } from "react";
+import { useReducer } from "react";
 
 import { PageHeader } from "~/components/page-header";
 import { MetricsSlideOver } from "~/components/thresholds/MetricsSlideOver";
@@ -86,36 +86,60 @@ export async function action({ request }: ActionFunctionArgs) {
   return redirect(`/dashboard?repo=${repoId}&timePeriod=${timePeriod}`);
 }
 
+// Define the state type and action types for our reducer
+type ThresholdsState = {
+  flakeThreshold: number;
+  failureThreshold: number;
+  timePeriod: string;
+};
+
+type ThresholdsAction =
+  | { type: "SET_FLAKE_THRESHOLD"; payload: number }
+  | { type: "SET_FAILURE_THRESHOLD"; payload: number }
+  | { type: "SET_TIME_PERIOD"; payload: string }
+  | { type: "RESET"; payload: ThresholdsState };
+
+// Create the reducer function
+function thresholdsReducer(
+  state: ThresholdsState,
+  action: ThresholdsAction,
+): ThresholdsState {
+  switch (action.type) {
+    case "SET_FLAKE_THRESHOLD":
+      return { ...state, flakeThreshold: action.payload };
+    case "SET_FAILURE_THRESHOLD":
+      return { ...state, failureThreshold: action.payload };
+    case "SET_TIME_PERIOD":
+      return { ...state, timePeriod: action.payload };
+    case "RESET":
+      return action.payload;
+    default:
+      return state;
+  }
+}
+
 export default function Thresholds() {
   const { repository, selectedRepo, tests, timePeriod } =
     useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
 
-  const [thresholds, setThresholds] = useState({
+  // Initialize state with repository data
+  const initialState: ThresholdsState = {
     flakeThreshold: repository?.flakeThreshold || 0,
     failureThreshold: repository?.failureThreshold || 0,
     timePeriod: timePeriod || repository?.timePeriod || "30d",
-  });
+  };
 
-  // Handle threshold changes from the form
-  const handleThresholdChange = ({
-    flakeThreshold,
-    failureThreshold,
-    timePeriod,
-  }: {
-    flakeThreshold?: number;
-    failureThreshold?: number;
-    timePeriod?: string;
-  }) => {
-    setThresholds((prev) => ({
-      flakeThreshold:
-        flakeThreshold !== undefined ? flakeThreshold : prev.flakeThreshold,
-      failureThreshold:
-        failureThreshold !== undefined
-          ? failureThreshold
-          : prev.failureThreshold,
-      timePeriod: timePeriod !== undefined ? timePeriod : prev.timePeriod,
-    }));
+  const [thresholds, dispatch] = useReducer(thresholdsReducer, initialState);
+
+  // Define handler functions for the ThresholdsForm component
+  const handleThresholdChange = {
+    flakeThreshold: (value: number) =>
+      dispatch({ type: "SET_FLAKE_THRESHOLD", payload: value }),
+    failureThreshold: (value: number) =>
+      dispatch({ type: "SET_FAILURE_THRESHOLD", payload: value }),
+    timePeriod: (value: string) =>
+      dispatch({ type: "SET_TIME_PERIOD", payload: value }),
   };
 
   if (!repository) {
@@ -147,14 +171,8 @@ export default function Thresholds() {
           selectedRepo={selectedRepo}
           tests={tests}
           actionData={actionData}
-          onChange={{
-            flakeThreshold: (value: number) =>
-              handleThresholdChange({ flakeThreshold: value }),
-            failureThreshold: (value: number) =>
-              handleThresholdChange({ failureThreshold: value }),
-            timePeriod: (value: string) =>
-              handleThresholdChange({ timePeriod: value }),
-          }}
+          onChange={handleThresholdChange}
+          thresholdValues={thresholds}
         />
       </div>
     </div>
