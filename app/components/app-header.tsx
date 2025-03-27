@@ -75,7 +75,7 @@ export function AppHeader({ repositories, selectedRepo }: AppHeaderProps) {
                 </span>
               </div>
             </Link>
-            <nav className="flex items-center gap-2 text-sm">
+            <nav className="flex items-center gap-5 text-sm">
               <Link
                 to={`/dashboard?repo=${selectedRepo}`}
                 className={cn(

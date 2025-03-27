@@ -170,12 +170,14 @@ export class CypressService {
         update: {
           flakeRecommendations: globalSettings.flakeRecommendations,
           failureRecommendations: globalSettings.failureRecommendations,
+          repoSizeThresholds: globalSettings.repoSizeThresholds,
           guardrails: globalSettings.guardrails,
         },
         create: {
           id: "global",
           flakeRecommendations: globalSettings.flakeRecommendations,
           failureRecommendations: globalSettings.failureRecommendations,
+          repoSizeThresholds: globalSettings.repoSizeThresholds,
           guardrails: globalSettings.guardrails,
         },
       });

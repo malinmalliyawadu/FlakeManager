@@ -110,10 +110,21 @@ export function GlobalSettingsForm({
       globalSettings.guardrails.requireJiraTicket,
   );
 
-  // Active tab state
-  const [activeTab, setActiveTab] = useState<"recommendations" | "guardrails">(
-    "recommendations",
+  // Add state values for repo size thresholds
+  const [smallRepoThreshold, setSmallRepoThreshold] = useState(
+    actionData?.values?.repoSizeThresholds?.small ??
+      globalSettings.repoSizeThresholds.small,
   );
+
+  const [mediumRepoThreshold, setMediumRepoThreshold] = useState(
+    actionData?.values?.repoSizeThresholds?.medium ??
+      globalSettings.repoSizeThresholds.medium,
+  );
+
+  // Define the activeTab as a state with union type
+  const [activeTab, setActiveTab] = useState<
+    "recommendations" | "guardrails" | "repoSizes"
+  >("recommendations");
 
   // Update state when global settings or actionData changes
   useEffect(() => {
@@ -171,6 +182,16 @@ export function GlobalSettingsForm({
         globalSettings.failureRecommendations.large.description,
     );
 
+    // Update repo size threshold states
+    setSmallRepoThreshold(
+      actionData?.values?.repoSizeThresholds?.small ??
+        globalSettings.repoSizeThresholds.small,
+    );
+    setMediumRepoThreshold(
+      actionData?.values?.repoSizeThresholds?.medium ??
+        globalSettings.repoSizeThresholds.medium,
+    );
+
     // Update guardrail states
     setMaxExcludedTests(
       actionData?.values?.guardrails?.maxExcludedTests ??
@@ -201,7 +222,7 @@ export function GlobalSettingsForm({
     largeFailureThreshold !==
       globalSettings.failureRecommendations.large.threshold;
 
-  // Add hidden inputs for descriptions
+  // Add description constants for thresholds
   const flakeDescriptions = {
     small:
       "For smaller test suites, keep a low threshold to catch flakiness early.",
@@ -250,6 +271,17 @@ export function GlobalSettingsForm({
             <button
               type="button"
               className={`px-4 py-2 font-medium ${
+                activeTab === "repoSizes"
+                  ? "border-b-2 border-primary text-primary"
+                  : "text-muted-foreground"
+              }`}
+              onClick={() => setActiveTab("repoSizes")}
+            >
+              Repository Sizes
+            </button>
+            <button
+              type="button"
+              className={`px-4 py-2 font-medium ${
                 activeTab === "guardrails"
                   ? "border-b-2 border-primary text-primary"
                   : "text-muted-foreground"
@@ -262,6 +294,38 @@ export function GlobalSettingsForm({
         </div>
 
         <Form method="post" className="space-y-6" id="global-settings-form">
+          {/* Hidden inputs for descriptions */}
+          <input
+            type="hidden"
+            name="smallFlakeDescription"
+            value={flakeDescriptions.small}
+          />
+          <input
+            type="hidden"
+            name="mediumFlakeDescription"
+            value={flakeDescriptions.medium}
+          />
+          <input
+            type="hidden"
+            name="largeFlakeDescription"
+            value={flakeDescriptions.large}
+          />
+          <input
+            type="hidden"
+            name="smallFailureDescription"
+            value={failureDescriptions.small}
+          />
+          <input
+            type="hidden"
+            name="mediumFailureDescription"
+            value={failureDescriptions.medium}
+          />
+          <input
+            type="hidden"
+            name="largeFailureDescription"
+            value={failureDescriptions.large}
+          />
+
           {/* Recommendations Tab Content */}
           {activeTab === "recommendations" && (
             <div className="space-y-6">
@@ -384,48 +448,33 @@ export function GlobalSettingsForm({
                     id="smallFlakeThreshold"
                     name="smallFlakeThreshold"
                     label="Small Test Suites"
-                    description="For repositories with fewer than 20 tests"
+                    description={`For repositories with fewer than ${smallRepoThreshold} tests`}
                     value={smallFlakeThreshold}
                     error={actionData?.errors?.smallFlakeThreshold}
                     onChange={setSmallFlakeThreshold}
                     infoText={flakeDescriptions.small}
-                  />
-                  <input
-                    type="hidden"
-                    name="smallFlakeDescription"
-                    value={flakeDescriptions.small}
                   />
 
                   <ThresholdInput
                     id="mediumFlakeThreshold"
                     name="mediumFlakeThreshold"
                     label="Medium Test Suites"
-                    description="For repositories with 20-50 tests"
+                    description={`For repositories with ${smallRepoThreshold}-${mediumRepoThreshold} tests`}
                     value={mediumFlakeThreshold}
                     error={actionData?.errors?.mediumFlakeThreshold}
                     onChange={setMediumFlakeThreshold}
                     infoText={flakeDescriptions.medium}
-                  />
-                  <input
-                    type="hidden"
-                    name="mediumFlakeDescription"
-                    value={flakeDescriptions.medium}
                   />
 
                   <ThresholdInput
                     id="largeFlakeThreshold"
                     name="largeFlakeThreshold"
                     label="Large Test Suites"
-                    description="For repositories with 50+ tests"
+                    description={`For repositories with more than ${mediumRepoThreshold} tests`}
                     value={largeFlakeThreshold}
                     error={actionData?.errors?.largeFlakeThreshold}
                     onChange={setLargeFlakeThreshold}
                     infoText={flakeDescriptions.large}
-                  />
-                  <input
-                    type="hidden"
-                    name="largeFlakeDescription"
-                    value={flakeDescriptions.large}
                   />
                 </div>
               </div>
@@ -446,49 +495,158 @@ export function GlobalSettingsForm({
                     id="smallFailureThreshold"
                     name="smallFailureThreshold"
                     label="Small Test Suites"
-                    description="For repositories with fewer than 20 tests"
+                    description={`For repositories with fewer than ${smallRepoThreshold} tests`}
                     value={smallFailureThreshold}
                     error={actionData?.errors?.smallFailureThreshold}
                     onChange={setSmallFailureThreshold}
                     infoText={failureDescriptions.small}
-                  />
-                  <input
-                    type="hidden"
-                    name="smallFailureDescription"
-                    value={failureDescriptions.small}
                   />
 
                   <ThresholdInput
                     id="mediumFailureThreshold"
                     name="mediumFailureThreshold"
                     label="Medium Test Suites"
-                    description="For repositories with 20-50 tests"
+                    description={`For repositories with ${smallRepoThreshold}-${mediumRepoThreshold} tests`}
                     value={mediumFailureThreshold}
                     error={actionData?.errors?.mediumFailureThreshold}
                     onChange={setMediumFailureThreshold}
                     infoText={failureDescriptions.medium}
-                  />
-                  <input
-                    type="hidden"
-                    name="mediumFailureDescription"
-                    value={failureDescriptions.medium}
                   />
 
                   <ThresholdInput
                     id="largeFailureThreshold"
                     name="largeFailureThreshold"
                     label="Large Test Suites"
-                    description="For repositories with 50+ tests"
+                    description={`For repositories with more than ${mediumRepoThreshold} tests`}
                     value={largeFailureThreshold}
                     error={actionData?.errors?.largeFailureThreshold}
                     onChange={setLargeFailureThreshold}
                     infoText={failureDescriptions.large}
                   />
-                  <input
-                    type="hidden"
-                    name="largeFailureDescription"
-                    value={failureDescriptions.large}
-                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Add Repository Sizes Tab Content */}
+          {activeTab === "repoSizes" && (
+            <div className="space-y-6">
+              <div className="rounded-lg border border-muted bg-muted/5 p-4">
+                <h2 className="text-lg font-semibold">
+                  Repository Size Configuration
+                </h2>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Configure the thresholds that determine whether a repository
+                  is considered small, medium, or large. These values affect
+                  which recommendations are applied to repositories based on
+                  their test count.
+                </p>
+
+                <div className="mt-6 grid gap-6 md:grid-cols-2">
+                  <div className="space-y-3">
+                    <Label htmlFor="smallRepoThreshold" className="text-base">
+                      Small Repository Threshold
+                    </Label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        id="smallRepoThreshold"
+                        name="smallRepoThreshold"
+                        min="1"
+                        value={smallRepoThreshold}
+                        onChange={(e) =>
+                          setSmallRepoThreshold(Number(e.target.value))
+                        }
+                        className={
+                          actionData?.errors?.smallRepoThreshold
+                            ? "border-destructive"
+                            : ""
+                        }
+                      />
+                      <span className="text-lg font-medium">tests</span>
+                    </div>
+                    {actionData?.errors?.smallRepoThreshold ? (
+                      <p className="text-sm text-destructive">
+                        {actionData.errors.smallRepoThreshold}
+                      </p>
+                    ) : null}
+                    <p className="text-sm text-muted-foreground">
+                      Repositories with fewer than this number of tests are
+                      considered small.
+                    </p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label htmlFor="mediumRepoThreshold" className="text-base">
+                      Medium Repository Threshold
+                    </Label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        id="mediumRepoThreshold"
+                        name="mediumRepoThreshold"
+                        min="1"
+                        value={mediumRepoThreshold}
+                        onChange={(e) =>
+                          setMediumRepoThreshold(Number(e.target.value))
+                        }
+                        className={
+                          actionData?.errors?.mediumRepoThreshold
+                            ? "border-destructive"
+                            : ""
+                        }
+                      />
+                      <span className="text-lg font-medium">tests</span>
+                    </div>
+                    {actionData?.errors?.mediumRepoThreshold ? (
+                      <p className="text-sm text-destructive">
+                        {actionData.errors.mediumRepoThreshold}
+                      </p>
+                    ) : null}
+                    <p className="text-sm text-muted-foreground">
+                      Repositories with test count between the small threshold
+                      and this number are considered medium. Anything above this
+                      is large.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-6 space-y-2 rounded-md border bg-muted/50 p-4">
+                  <h3 className="text-sm font-medium">
+                    Repository Size Classification
+                  </h3>
+                  <ul className="space-y-1 text-xs text-muted-foreground">
+                    <li>
+                      • <strong>Small:</strong> Fewer than {smallRepoThreshold}{" "}
+                      tests
+                    </li>
+                    <li>
+                      • <strong>Medium:</strong> Between {smallRepoThreshold}{" "}
+                      and {mediumRepoThreshold} tests
+                    </li>
+                    <li>
+                      • <strong>Large:</strong> More than {mediumRepoThreshold}{" "}
+                      tests
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="mt-6 rounded-md border bg-blue-50 p-4 dark:bg-blue-950/20">
+                  <div className="flex items-start gap-3">
+                    <InfoIcon className="mt-1 h-5 w-5 text-blue-500 dark:text-blue-400" />
+                    <div>
+                      <h4 className="font-medium text-blue-700 dark:text-blue-300">
+                        How Repository Sizes Affect Recommendations
+                      </h4>
+                      <p className="mt-1 text-sm text-blue-600 dark:text-blue-400">
+                        These settings determine which threshold recommendations
+                        apply to each repository based on its test count.
+                        Changing these values will update the descriptions in
+                        the threshold recommendations tab to reflect the new
+                        size ranges.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

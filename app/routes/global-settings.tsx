@@ -40,6 +40,10 @@ export type GlobalSettings = {
       description: string;
     };
   };
+  repoSizeThresholds: {
+    small: number;
+    medium: number;
+  };
   guardrails: {
     maxExcludedTests: number;
     maxExcludedTestsPercentage: number;
@@ -82,6 +86,10 @@ const defaultGlobalSettings: GlobalSettings = {
       description:
         "For larger test suites, focus on the most consistently failing tests first.",
     },
+  },
+  repoSizeThresholds: {
+    small: 20, // Repositories with < 20 tests are small
+    medium: 50, // Repositories with 20-50 tests are medium, > 50 is large
   },
   guardrails: {
     maxExcludedTests: 10,
@@ -155,6 +163,16 @@ export async function action({ request }: ActionFunctionArgs) {
     "largeFailureDescription",
   ) as string;
 
+  // Parse form data for repo size thresholds
+  const smallRepoThreshold = parseInt(
+    formData.get("smallRepoThreshold") as string,
+    10,
+  );
+  const mediumRepoThreshold = parseInt(
+    formData.get("mediumRepoThreshold") as string,
+    10,
+  );
+
   // Parse form data for guardrails
   const maxExcludedTests = parseInt(
     formData.get("maxExcludedTests") as string,
@@ -220,6 +238,22 @@ export async function action({ request }: ActionFunctionArgs) {
       "Failure threshold must be a number between 0 and 100";
   }
 
+  // Validate repo size thresholds
+  if (isNaN(smallRepoThreshold) || smallRepoThreshold <= 0) {
+    errors.smallRepoThreshold =
+      "Small repo threshold must be a positive number";
+  }
+
+  if (isNaN(mediumRepoThreshold) || mediumRepoThreshold <= 0) {
+    errors.mediumRepoThreshold =
+      "Medium repo threshold must be a positive number";
+  }
+
+  if (smallRepoThreshold >= mediumRepoThreshold) {
+    errors.smallRepoThreshold =
+      "Small repo threshold must be less than medium repo threshold";
+  }
+
   // Validate guardrails
   if (isNaN(maxExcludedTests) || maxExcludedTests < 0) {
     errors.maxExcludedTests =
@@ -266,6 +300,10 @@ export async function action({ request }: ActionFunctionArgs) {
             description: largeFailureDescription,
           },
         },
+        repoSizeThresholds: {
+          small: smallRepoThreshold,
+          medium: mediumRepoThreshold,
+        },
         guardrails: {
           maxExcludedTests,
           maxExcludedTestsPercentage,
@@ -304,6 +342,10 @@ export async function action({ request }: ActionFunctionArgs) {
         threshold: largeFailureThreshold,
         description: largeFailureDescription,
       },
+    },
+    repoSizeThresholds: {
+      small: smallRepoThreshold,
+      medium: mediumRepoThreshold,
     },
     guardrails: {
       maxExcludedTests,
