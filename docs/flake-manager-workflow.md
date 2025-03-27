@@ -2,6 +2,39 @@
 
 This diagram visualizes how Flake Manager integrates with GitHub Actions workflows to exclude flaky Cypress tests from CI runs.
 
+## Manual Process Being Replaced
+
+```mermaid
+flowchart LR
+    %% Current manual process
+    subgraph "Current Manual Process"
+        ciStart[Start CI Workflow]
+        ciRun[Run All Cypress Tests]
+        ciFail[Tests Fail]
+        checkDash[Developer Checks\nCypress Dashboard]
+        isFlaky{Is Test Flaky?}
+        addSkip[Add .skip to Test]
+        createPR[Update PR]
+        approvals[Request New\nApprovals]
+        reRun[Re-run Tests]
+
+        ciStart --> ciRun
+        ciRun --> ciFail
+        ciFail --> checkDash
+        checkDash --> isFlaky
+        isFlaky -- Yes --> addSkip
+        addSkip --> createPR
+        createPR --> approvals
+        approvals --> reRun
+        isFlaky -- No --> createPR
+    end
+
+    %% Styling - adjusted for dark mode readability
+    classDef manual fill:#7D3C98,stroke:#ffffff,stroke-width:2px,color:#ffffff
+
+    class ciStart,ciRun,ciFail,checkDash,isFlaky,addSkip,createPR,approvals,reRun manual
+```
+
 ## CI Integration Flow
 
 ```mermaid
@@ -101,6 +134,24 @@ flowchart LR
 ```
 
 ## How It Works
+
+### Current Manual Process (Problems)
+
+The current manual approach to handling flaky tests:
+
+1. **CI Pipeline Runs** all tests without exclusions
+2. **Tests Fail**, blocking the build/deployment
+3. **Developer Investigates** by checking the Cypress Dashboard
+4. If determined to be **flaky**:
+   - Developer manually adds `.skip` to the test
+   - Updates the PR with the change
+   - Requests new approvals for the modified code
+   - Re-runs the tests
+5. **Process Problems**:
+   - Wastes developer time on repeated manual interventions
+   - Delays deployments while waiting for fixes and approvals
+   - No systematic tracking of flaky tests
+   - Inconsistent handling of test reliability issues
 
 ### Automated Test Exclusion Process
 
