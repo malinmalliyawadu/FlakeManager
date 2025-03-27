@@ -29,3 +29,44 @@ export interface ApiResponse {
   data?: Test[];
   message?: string;
 }
+
+export interface GlobalSettings {
+  id: string;
+  flakeRecommendations: {
+    small: {
+      threshold: number;
+      description: string;
+    };
+    medium: {
+      threshold: number;
+      description: string;
+    };
+    large: {
+      threshold: number;
+      description: string;
+    };
+  };
+  failureRecommendations: {
+    small: {
+      threshold: number;
+      description: string;
+    };
+    medium: {
+      threshold: number;
+      description: string;
+    };
+    large: {
+      threshold: number;
+      description: string;
+    };
+  };
+  repoSizeThresholds: {
+    small: number; // Max number of tests to be considered small
+    medium: number; // Max number of tests to be considered medium (above this is large)
+  };
+  guardrails: {
+    maxExcludedTests: number;
+    maxExcludedTestsPercentage: number;
+    requireJiraTicket: boolean;
+  };
+}
