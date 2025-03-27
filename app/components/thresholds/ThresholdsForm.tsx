@@ -400,10 +400,10 @@ function TimePeriodInput({
   const handleValueChange = (newValue: string) => {
     onChange(newValue);
 
-    // Refresh the page with the new time period to get updated test data
+    // Update the URL with the new time period to get updated test data
     const url = new URL(window.location.href);
     url.searchParams.set("timePeriod", newValue);
-    window.location.href = url.toString();
+    navigate(url.toString(), { replace: true });
   };
 
   return (
