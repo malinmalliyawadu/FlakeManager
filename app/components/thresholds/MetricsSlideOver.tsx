@@ -1,4 +1,4 @@
-import { LineChart, BarChart4 } from "lucide-react";
+import { LineChart, BarChart4, CalendarRange } from "lucide-react";
 import { useState } from "react";
 
 import { TrendVisualizer } from "~/components/thresholds/TrendVisualizer";
@@ -18,6 +18,7 @@ interface MetricsSlideOverProps {
   tests: Test[];
   flakeThreshold: number;
   failureThreshold: number;
+  timePeriod?: string;
 }
 
 export function MetricsSlideOver({
@@ -25,8 +26,24 @@ export function MetricsSlideOver({
   tests,
   flakeThreshold,
   failureThreshold,
+  timePeriod = "30d",
 }: MetricsSlideOverProps) {
   const [open, setOpen] = useState(false);
+
+  const timePeriodText = () => {
+    switch (timePeriod) {
+      case "7d":
+        return "Last 7 Days";
+      case "30d":
+        return "Last 30 Days";
+      case "90d":
+        return "Last 90 Days";
+      case "all":
+        return "All Time";
+      default:
+        return "Last 30 Days";
+    }
+  };
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -39,7 +56,7 @@ export function MetricsSlideOver({
       <SheetContent className="w-full max-w-3xl overflow-y-auto sm:max-w-xl">
         <SheetHeader className="mb-6">
           <SheetTitle className="flex items-center gap-2">
-            <LineChart className="text-primary h-5 w-5" />
+            <LineChart className="h-5 w-5 text-primary" />
             Test Metrics Dashboard
           </SheetTitle>
           <SheetDescription>
@@ -49,6 +66,11 @@ export function MetricsSlideOver({
         </SheetHeader>
 
         <div className="space-y-8">
+          <div className="flex items-center justify-end text-sm text-muted-foreground">
+            <CalendarRange className="mr-1 h-4 w-4" />
+            <span>Time Period: {timePeriodText()}</span>
+          </div>
+
           <TrendVisualizer
             repository={repository}
             tests={tests}
@@ -80,7 +102,7 @@ function MetricsOverview({ tests }: { tests: Test[] }) {
   };
 
   return (
-    <div className="bg-card rounded-lg border">
+    <div className="rounded-lg border bg-card">
       <div className="p-6">
         <h3 className="mb-4 text-lg font-semibold">Test Health Summary</h3>
 
@@ -182,7 +204,7 @@ function MetricBar({ label, count, total, color }: MetricBarProps) {
           {count} tests ({percentage}%)
         </span>
       </div>
-      <div className="bg-muted h-2 w-full rounded-full">
+      <div className="h-2 w-full rounded-full bg-muted">
         <div
           className={`h-full rounded-full ${color}`}
           style={{ width: `${percentage}%` }}

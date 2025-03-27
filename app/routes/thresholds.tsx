@@ -16,6 +16,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const cypressService = getCypressService();
   const url = new URL(request.url);
   const selectedRepo = url.searchParams.get("repo") || "demo-repo";
+  const timePeriod = url.searchParams.get("timePeriod") || "30d";
 
   const repositories = await cypressService.getRepositories();
   const repository = await cypressService.getRepository(selectedRepo);
@@ -23,14 +24,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
     throw new Response("Repository not found", { status: 404 });
   }
 
-  // Get all tests to show the impact of threshold changes
-  const tests = await cypressService.getTestsForRepo(selectedRepo);
+  // Get all tests to show the impact of threshold changes, filtered by time period
+  const tests = await cypressService.getTestsForRepo(selectedRepo, timePeriod);
 
   return json({
     repository,
     repositories,
     selectedRepo,
     tests,
+    timePeriod,
   });
 }
 
@@ -44,6 +46,7 @@ export async function action({ request }: ActionFunctionArgs) {
     formData.get("failureThreshold") as string,
     10,
   );
+  const timePeriod = formData.get("timePeriod") as string;
 
   const errors: Record<string, string> = {};
 
@@ -61,8 +64,15 @@ export async function action({ request }: ActionFunctionArgs) {
       "Failure threshold must be a number between 0 and 100";
   }
 
+  if (!timePeriod || !["7d", "30d", "90d", "all"].includes(timePeriod)) {
+    errors.timePeriod = "Please select a valid time period";
+  }
+
   if (Object.keys(errors).length > 0) {
-    return json({ errors, values: { flakeThreshold, failureThreshold } });
+    return json({
+      errors,
+      values: { flakeThreshold, failureThreshold, timePeriod },
+    });
   }
 
   // Update the repository thresholds
@@ -70,27 +80,33 @@ export async function action({ request }: ActionFunctionArgs) {
     repoId,
     flakeThreshold,
     failureThreshold,
+    timePeriod,
   );
 
-  return redirect(`/dashboard?repo=${repoId}`);
+  // Include timePeriod in the redirect URL
+  return redirect(`/dashboard?repo=${repoId}&timePeriod=${timePeriod}`);
 }
 
 export default function Thresholds() {
-  const { repository, selectedRepo, tests } = useLoaderData<typeof loader>();
+  const { repository, selectedRepo, tests, timePeriod } =
+    useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
 
   const [thresholds, setThresholds] = useState({
     flakeThreshold: repository?.flakeThreshold || 0,
     failureThreshold: repository?.failureThreshold || 0,
+    timePeriod: timePeriod || repository?.timePeriod || "30d",
   });
 
   // Handle threshold changes from the form
   const handleThresholdChange = ({
     flakeThreshold,
     failureThreshold,
+    timePeriod,
   }: {
     flakeThreshold?: number;
     failureThreshold?: number;
+    timePeriod?: string;
   }) => {
     setThresholds((prev) => ({
       flakeThreshold:
@@ -99,6 +115,7 @@ export default function Thresholds() {
         failureThreshold !== undefined
           ? failureThreshold
           : prev.failureThreshold,
+      timePeriod: timePeriod !== undefined ? timePeriod : prev.timePeriod,
     }));
   };
 
@@ -118,12 +135,16 @@ export default function Thresholds() {
           tests={tests}
           flakeThreshold={thresholds.flakeThreshold}
           failureThreshold={thresholds.failureThreshold}
+          timePeriod={thresholds.timePeriod}
         />
       </div>
 
       <div className="space-y-6">
         <ThresholdsForm
-          repository={repository}
+          repository={{
+            ...repository,
+            timePeriod: thresholds.timePeriod,
+          }}
           selectedRepo={selectedRepo}
           tests={tests}
           actionData={actionData}
@@ -132,6 +153,8 @@ export default function Thresholds() {
               handleThresholdChange({ flakeThreshold: value }),
             failureThreshold: (value: number) =>
               handleThresholdChange({ failureThreshold: value }),
+            timePeriod: (value: string) =>
+              handleThresholdChange({ timePeriod: value }),
           }}
         />
       </div>
