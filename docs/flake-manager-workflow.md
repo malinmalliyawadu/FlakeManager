@@ -11,11 +11,13 @@ flowchart LR
         ciStart[Start CI Workflow]
         ciRun[Run All Cypress Tests]
         ciFail[Tests Fail]
-        checkDash[Developer Checks\nCypress Dashboard]
+        checkDash["Developer Checks
+        Cypress Dashboard"]
         isFlaky{Is Test Flaky?}
         addSkip[Add .skip to Test]
         createPR[Update PR]
-        approvals[Request New\nApprovals]
+        approvals["Request New
+        Approvals"]
         reRun[Re-run Tests]
 
         ciStart --> ciRun
@@ -53,10 +55,12 @@ flowchart LR
 
     %% Flake Manager application
     subgraph "Flake Manager"
-        api[API Endpoint\n/api/excluded-tests]
+        api["API Endpoint
+        /api/excluded-tests"]
         service[Cypress Service]
         db[(Database)]
-        calc[Calculate Exclusions\nBased on Thresholds]
+        calc["Calculate Exclusions
+        Based on Thresholds"]
 
         api --> service
         service --> db
@@ -68,7 +72,8 @@ flowchart LR
     subgraph "Cypress Data Extract API"
         cypressAPI[Cypress API]
         testHistory[Historical Test Runs]
-        flakeAnalysis[Calculate Flake/Failure Rates]
+        flakeAnalysis["Calculate Flake/
+        Failure Rates"]
 
         cypressAPI --> testHistory
         testHistory --> flakeAnalysis
@@ -97,7 +102,8 @@ flowchart LR
     subgraph "Manual Operations"
         ui[Flake Manager Dashboard]
         view[View Test Details]
-        toggle[Toggle Test Inclusion/Exclusion]
+        toggle["Toggle Test
+        Inclusion/Exclusion"]
         createTicket[Create JIRA Ticket]
 
         ui --> view
