@@ -13,7 +13,6 @@ import { AppHeader } from "~/components/app-header";
 import { ThemeProvider } from "~/components/ui/theme-provider";
 import { getCypressService } from "~/services/cypress.server";
 
-// Direct import of Tailwind CSS for Vite
 import "~/tailwind.css";
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -33,8 +32,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const { repositories, selectedRepo } = useLoaderData<typeof loader>();
-
   return (
     <html lang="en" className="h-full antialiased">
       <head>
@@ -47,10 +44,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <body className="h-full bg-background">
         <ThemeProvider defaultTheme="system" storageKey="flake-manager-theme">
           <div className="flex min-h-screen flex-col">
-            <AppHeader
+            {/* <AppHeader
               repositories={repositories}
               selectedRepo={selectedRepo}
-            />
+            /> */}
 
             <main className="flex-1 bg-background">
               <div className="mx-auto max-w-screen-xl px-4 py-8 md:px-8">
