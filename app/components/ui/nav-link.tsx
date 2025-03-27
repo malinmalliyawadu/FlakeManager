@@ -1,4 +1,4 @@
-import { Link } from "@remix-run/react";
+import { Link } from "react-router";
 import { LucideIcon } from "lucide-react";
 import { cn } from "~/lib/utils";
 
@@ -29,7 +29,7 @@ export function NavLink({
         className={cn(
           "flex h-8 w-8 items-center justify-center rounded-full p-1.5 transition-all duration-200",
           isActive
-            ? "bg-blue-100 text-blue-700 shadow-sm dark:bg-blue-900/40 dark:text-blue-400"
+            ? "bg-blue-100 text-blue-700 shadow-xs dark:bg-blue-900/40 dark:text-blue-400"
             : "bg-blue-100/50 text-blue-600 group-hover:bg-blue-100 group-hover:text-blue-700 dark:bg-blue-900/20 dark:text-blue-500 dark:group-hover:bg-blue-900/40 dark:group-hover:text-blue-400",
         )}
       >

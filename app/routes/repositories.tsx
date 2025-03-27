@@ -1,11 +1,11 @@
-import { json, redirect, type ActionFunctionArgs } from "@remix-run/node";
+import { redirect, type ActionFunctionArgs } from "react-router";
 import {
   Form as RemixForm,
   useActionData,
   useLoaderData,
   useNavigation,
   Link,
-} from "@remix-run/react";
+} from "react-router";
 import {
   ChevronLeft,
   Database,
@@ -55,10 +55,10 @@ export async function loader() {
   const repositories = await cypressService.getRepositories();
   const boards = await jiraService.getBoards();
 
-  return json({
+  return {
     repositories,
     boards,
-  });
+  };
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -79,7 +79,7 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   if (Object.keys(errors).length > 0) {
-    return json({ errors, values: { repoId, defaultJiraBoard } });
+    return { errors, values: { repoId, defaultJiraBoard } };
   }
 
   // Update the repository JIRA board
@@ -109,7 +109,7 @@ export default function Repositories() {
         </Button>
       </div>
 
-      <Card className="shadow-sm">
+      <Card className="shadow-xs">
         <CardHeader>
           <div className="flex items-center space-x-2">
             <Database className="h-5 w-5 text-primary" />

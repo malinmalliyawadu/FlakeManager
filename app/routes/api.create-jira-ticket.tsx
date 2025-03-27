@@ -1,4 +1,5 @@
-import { json, type ActionFunctionArgs } from "@remix-run/node";
+import { json } from "node:stream/consumers";
+import { type ActionFunctionArgs } from "react-router";
 
 import { getCypressService } from "~/services/cypress.server";
 import { getJiraService } from "~/services/jira.server";
@@ -19,12 +20,10 @@ export async function action({ request }: ActionFunctionArgs) {
     } = await request.json();
 
     if (!testId || !repository) {
-      return json(
-        {
-          error: "Missing required fields: testId and repository are required",
-        },
-        { status: 400 },
-      );
+      return {
+        error: "Missing required fields: testId and repository are required",
+        status: 400,
+      };
     }
 
     // Get the test details
@@ -32,12 +31,10 @@ export async function action({ request }: ActionFunctionArgs) {
     const test = tests.find((t) => t.id === testId);
 
     if (!test) {
-      return json(
-        {
-          error: `Test with ID ${testId} not found in repository ${repository}`,
-        },
-        { status: 404 },
-      );
+      return {
+        error: `Test with ID ${testId} not found in repository ${repository}`,
+        status: 404,
+      };
     }
 
     // Get repository details to fetch default JIRA board if needed
@@ -57,9 +54,9 @@ export async function action({ request }: ActionFunctionArgs) {
       return Response.redirect(returnTo);
     }
 
-    return json({ ticket });
+    return { ticket };
   } catch (error) {
     console.error("Error creating JIRA ticket:", error);
-    return json({ error: "Failed to create JIRA ticket" }, { status: 500 });
+    return { error: "Failed to create JIRA ticket", status: 500 };
   }
 }

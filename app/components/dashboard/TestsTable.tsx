@@ -4,7 +4,7 @@ import {
   useFetcher,
   useNavigation,
   useSearchParams,
-} from "@remix-run/react";
+} from "react-router";
 import {
   ToggleLeft,
   ToggleRight,
@@ -37,6 +37,7 @@ import {
   TooltipTrigger,
 } from "~/components/ui/tooltip";
 import { type Repository, type Test } from "~/types/cypress";
+import { Heading } from "~/components/ui/typography";
 
 interface TestsTableProps {
   tests: Test[];
@@ -152,7 +153,9 @@ export function TestsTable({
   return (
     <div>
       <div className="mb-1 flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
-        <h2 className="text-2xl font-bold tracking-tight">Test Status</h2>
+        <Heading as="h2" variant="h3">
+          Test Status
+        </Heading>
         <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:gap-3 sm:space-y-0">
           <TableSearch
             onSearch={handleSearch}
@@ -181,7 +184,7 @@ export function TestsTable({
         </div>
       </div>
 
-      <div className="mb-3 text-right text-sm text-muted-foreground">
+      <div className="text-muted-foreground mb-3 text-right text-sm">
         Showing {currentItems.length} of {filteredTests.length} tests
         {searchTerm && (
           <span>
@@ -191,7 +194,7 @@ export function TestsTable({
         )}
       </div>
 
-      <Card className="shadow-sm">
+      <Card className="shadow-xs">
         <CardContent className="p-0">
           <Table>
             <TableHeader>
@@ -267,7 +270,7 @@ export function TestsTable({
                           </div>
                           {test.flakeRate >
                           (repository?.flakeThreshold || 5) ? (
-                            <span className="ml-2 text-xs text-muted-foreground">
+                            <span className="text-muted-foreground ml-2 text-xs">
                               (&gt;{repository?.flakeThreshold || 5}%)
                             </span>
                           ) : null}
@@ -287,7 +290,7 @@ export function TestsTable({
                           </div>
                           {test.failureRate >
                           (repository?.failureThreshold || 10) ? (
-                            <span className="ml-2 text-xs text-muted-foreground">
+                            <span className="text-muted-foreground ml-2 text-xs">
                               (&gt;{repository?.failureThreshold || 10}%)
                             </span>
                           ) : null}

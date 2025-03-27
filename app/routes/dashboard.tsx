@@ -1,5 +1,5 @@
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { type LoaderFunctionArgs } from "react-router";
+import { useLoaderData } from "react-router";
 
 import { DashboardStats } from "~/components/dashboard/DashboardStats";
 import { TestsTable } from "~/components/dashboard/TestsTable";
@@ -45,7 +45,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
   }
 
-  return json({
+  return {
     repository,
     repositories,
     selectedRepo,
@@ -60,7 +60,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
           !t.jiraTicket,
       ).length,
     },
-  });
+  };
 }
 
 export default function Dashboard() {

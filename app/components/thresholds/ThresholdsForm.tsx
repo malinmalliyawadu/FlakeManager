@@ -1,4 +1,4 @@
-import { Form } from "@remix-run/react";
+import { Form, useNavigate } from "react-router";
 import { Save, ChevronLeft, Gauge, CalendarRange } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -98,8 +98,10 @@ export function ThresholdsForm({
     }
   };
 
+  const navigate = useNavigate();
+
   return (
-    <Card className="shadow-sm">
+    <Card className="shadow-xs">
       <CardHeader>
         <div className="flex items-center space-x-2">
           <Gauge className="h-5 w-5 text-primary" />
@@ -384,18 +386,14 @@ function TimePeriodInput({
   description,
   help,
 }: TimePeriodInputProps) {
-  // Get the available time period options
   const options = [
-    { value: "7d", label: "Last 7 Days" },
-    { value: "30d", label: "Last 30 Days" },
-    { value: "90d", label: "Last 90 Days" },
-    { value: "all", label: "All Time" },
+    { value: "7d", label: "Last 7 days" },
+    { value: "14d", label: "Last 14 days" },
+    { value: "30d", label: "Last 30 days" },
+    { value: "90d", label: "Last 90 days" },
   ];
 
-  // Find the current selected period for display
-  const selectedOption =
-    options.find((option) => option.value === value)?.label ||
-    "Select time period";
+  const navigate = useNavigate();
 
   const handleValueChange = (newValue: string) => {
     onChange(newValue);
@@ -405,6 +403,11 @@ function TimePeriodInput({
     url.searchParams.set("timePeriod", newValue);
     navigate(url.toString(), { replace: true });
   };
+
+  // Find the current selected period for display
+  const selectedOption =
+    options.find((option) => option.value === value)?.label ||
+    "Select time period";
 
   return (
     <div className="space-y-3">
