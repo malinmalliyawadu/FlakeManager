@@ -53,6 +53,9 @@ export default {
           "5": "hsl(var(--chart-5))",
         },
       },
+      borderColor: {
+        DEFAULT: "hsl(var(--border))",
+      },
       keyframes: {
         fadeIn: {
           "0%": { opacity: "0" },

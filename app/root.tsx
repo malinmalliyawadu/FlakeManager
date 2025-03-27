@@ -1,29 +1,20 @@
-import { cssBundleHref } from "@remix-run/css-bundle";
-import {
-  json,
-  type LinksFunction,
-  type LoaderFunctionArgs,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs } from "react-router";
 import {
   Links,
-  LiveReload,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
   useLoaderData,
-} from "@remix-run/react";
+} from "react-router";
 import { Toaster } from "sonner";
 
 import { AppHeader } from "~/components/app-header";
 import { ThemeProvider } from "~/components/ui/theme-provider";
 import { getCypressService } from "~/services/cypress.server";
-import stylesheet from "~/tailwind.css";
 
-export const links: LinksFunction = () => [
-  { rel: "stylesheet", href: stylesheet },
-  ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
-];
+// Direct import of Tailwind CSS for Vite
+import "~/tailwind.css";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const cypressService = getCypressService();
@@ -34,82 +25,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const repository = await cypressService.getRepository(selectedRepo);
 
-  return json({
+  return {
     repositories,
     selectedRepo,
     repository,
-  });
+  };
 }
 
-// Inline script to set the theme class before the first render
-// to avoid flickering from light to dark theme
-function ThemePreload() {
-  return (
-    <script
-      dangerouslySetInnerHTML={{
-        __html: `
-          (function () {
-            function getThemePreference() {
-              const theme = window.localStorage.getItem('flake-manager-theme');
-              if (theme) return theme;
-              
-              return window.matchMedia('(prefers-color-scheme: dark)').matches
-                ? 'dark'
-                : 'light';
-            }
-            
-            const theme = getThemePreference();
-            
-            document.documentElement.classList.add(
-              theme === 'system' 
-                ? window.matchMedia('(prefers-color-scheme: dark)').matches
-                  ? 'dark'
-                  : 'light'
-                : theme
-            );
-          })();
-        `,
-      }}
-    />
-  );
-}
-
-// Script to handle GitHub Pages SPA routing
-function GithubPagesRouter() {
-  return (
-    <script
-      dangerouslySetInnerHTML={{
-        __html: `
-          (function() {
-            // Check if we are being redirected from the GitHub Pages 404 page
-            var redirect = sessionStorage.redirect;
-            delete sessionStorage.redirect;
-            
-            if (redirect && redirect !== window.location.href) {
-              history.replaceState(null, null, redirect);
-            }
-            
-            // Handle GitHub Pages path rewriting when accessed directly
-            var l = window.location;
-            if (l.search[1] === '/') {
-              var decoded = l.search.slice(1).split('&').map(function(s) { 
-                return s.replace(/~and~/g, '&');
-              }).join('?');
-              
-              window.history.replaceState(
-                null, 
-                null,
-                l.pathname.slice(0, -1) + decoded + l.hash
-              );
-            }
-          })();
-        `,
-      }}
-    />
-  );
-}
-
-export default function App() {
+export function Layout({ children }: { children: React.ReactNode }) {
   const { repositories, selectedRepo } = useLoaderData<typeof loader>();
 
   return (
@@ -120,8 +43,6 @@ export default function App() {
         <title>Flake Manager</title>
         <Meta />
         <Links />
-        <ThemePreload />
-        <GithubPagesRouter />
       </head>
       <body className="h-full bg-background">
         <ThemeProvider defaultTheme="system" storageKey="flake-manager-theme">
@@ -133,16 +54,19 @@ export default function App() {
 
             <main className="flex-1 bg-background">
               <div className="mx-auto max-w-screen-xl px-4 py-8 md:px-8">
-                <Outlet />
+                {children}
               </div>
             </main>
           </div>
           <Toaster position="top-right" richColors closeButton />
           <ScrollRestoration />
           <Scripts />
-          <LiveReload />
         </ThemeProvider>
       </body>
     </html>
   );
+}
+
+export default function App() {
+  return <Outlet />;
 }

@@ -1,4 +1,4 @@
-import { redirect, type ActionFunctionArgs } from "@remix-run/node";
+import { redirect, type ActionFunctionArgs } from "react-router";
 
 import { prisma } from "~/db.server";
 import { getCypressService } from "~/services/cypress.server";

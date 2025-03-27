@@ -1,4 +1,4 @@
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { type LoaderFunctionArgs } from "react-router";
 import { getCypressService } from "~/services/cypress.server";
 import type { ApiResponse, Test } from "~/types/cypress";
 
@@ -21,13 +21,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const repository = await cypressService.getRepository(repo);
 
     if (!repository) {
-      return json<ApiResponse>(
-        {
-          status: "error",
-          message: `Repository '${repo}' not found`,
-        },
-        { status: 404 },
-      );
+      return {
+        status: "error",
+        message: `Repository '${repo}' not found`,
+      };
     }
 
     // Use custom thresholds if provided, otherwise use repository defaults
@@ -62,7 +59,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       );
     });
 
-    return json<ApiResponse>({
+    return {
       status: "success",
       data: testsToExclude.map((test: Test) => ({
         id: test.id,
@@ -73,15 +70,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
         excluded: true,
         jiraTicket: test.jiraTicket,
       })),
-    });
+    };
   } catch (error) {
     console.error("Error retrieving excluded tests:", error);
-    return json<ApiResponse>(
-      {
-        status: "error",
-        message: "Failed to retrieve excluded tests",
-      },
-      { status: 500 },
-    );
+    return {
+      status: "error",
+      message: "Failed to retrieve excluded tests",
+    };
   }
 }

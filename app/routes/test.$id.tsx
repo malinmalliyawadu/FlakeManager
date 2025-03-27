@@ -1,5 +1,5 @@
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
-import { Link, useLoaderData } from "@remix-run/react";
+import { type LoaderFunctionArgs } from "react-router";
+import { Link, useLoaderData } from "react-router";
 import {
   ArrowLeft,
   ExternalLink,
@@ -49,12 +49,12 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     jiraTicket = await jiraService.getTicket(testId);
   }
 
-  return json({
+  return {
     test,
     repo,
     jiraTicket,
     repository,
-  });
+  };
 }
 
 export default function TestDetails() {

@@ -1,10 +1,9 @@
 import {
-  json,
   redirect,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
-} from "@remix-run/node";
-import { useActionData, useLoaderData } from "@remix-run/react";
+} from "react-router";
+import { useActionData, useLoaderData } from "react-router";
 
 import { PageHeader } from "~/components/page-header";
 import { GlobalSettingsForm } from "~/components/global-settings/GlobalSettingsForm";
@@ -109,10 +108,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
   // Get repositories to show impact of changes
   const repositories = await cypressService.getRepositories();
 
-  return json({
+  return {
     globalSettings,
     repositories,
-  });
+  };
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -269,7 +268,7 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   if (Object.keys(errors).length > 0) {
-    return json({
+    return {
       errors,
       values: {
         flakeRecommendations: {
@@ -310,7 +309,7 @@ export async function action({ request }: ActionFunctionArgs) {
           requireJiraTicket,
         },
       },
-    });
+    };
   }
 
   // Construct the global settings object

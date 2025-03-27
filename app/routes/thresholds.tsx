@@ -1,10 +1,9 @@
 import {
-  json,
   redirect,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
-} from "@remix-run/node";
-import { useActionData, useLoaderData } from "@remix-run/react";
+} from "react-router";
+import { useActionData, useLoaderData } from "react-router";
 import { useState } from "react";
 
 import { PageHeader } from "~/components/page-header";
@@ -27,13 +26,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
   // Get all tests to show the impact of threshold changes, filtered by time period
   const tests = await cypressService.getTestsForRepo(selectedRepo, timePeriod);
 
-  return json({
+  return {
     repository,
     repositories,
     selectedRepo,
     tests,
     timePeriod,
-  });
+  };
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -69,10 +68,10 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   if (Object.keys(errors).length > 0) {
-    return json({
+    return {
       errors,
       values: { flakeThreshold, failureThreshold, timePeriod },
-    });
+    };
   }
 
   // Update the repository thresholds
