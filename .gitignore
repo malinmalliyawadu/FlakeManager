@@ -16,3 +16,5 @@ api/index.js.map
 /cypress/videos
 /prisma/data.db
 /prisma/data.db-journal
+
+.DS_Store
