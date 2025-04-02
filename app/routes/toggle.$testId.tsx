@@ -1,8 +1,6 @@
 import { redirect, type ActionFunctionArgs } from "react-router";
 
 import { prisma } from "~/db.server";
-import { getCypressService } from "~/services/cypress.server";
-import { type Test } from "~/types/cypress";
 
 export async function loader({ request }: ActionFunctionArgs) {
   // Redirect any direct visits to this page back to the dashboard

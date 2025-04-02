@@ -1,10 +1,4 @@
-import {
-  Link,
-  Form,
-  useFetcher,
-  useNavigation,
-  useSearchParams,
-} from "react-router";
+import { Repository, Test } from "@prisma/client";
 import {
   ToggleLeft,
   ToggleRight,
@@ -15,10 +9,11 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
+import { Link, useFetcher } from "react-router";
 
-import { CreateTicketSheet } from "~/components/jira/CreateTicketSheet";
 import { TablePagination } from "~/components/dashboard/TablePagination";
 import { TableSearch } from "~/components/dashboard/TableSearch";
+import { CreateTicketSheet } from "~/components/jira/CreateTicketSheet";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
@@ -36,7 +31,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "~/components/ui/tooltip";
-import { type Repository, type Test } from "~/types/cypress";
 import { Heading } from "~/components/ui/typography";
 
 interface TestsTableProps {
@@ -186,12 +180,10 @@ export function TestsTable({
 
       <div className="text-muted-foreground mb-3 text-right text-sm">
         Showing {currentItems.length} of {filteredTests.length} tests
-        {searchTerm && (
-          <span>
+        {searchTerm ? <span>
             {" "}
             matching "<strong>{searchTerm}</strong>"
-          </span>
-        )}
+          </span> : null}
       </div>
 
       <Card className="shadow-xs">
@@ -397,13 +389,11 @@ export function TestsTable({
       </Card>
 
       {/* Show pagination only if there are more than one page */}
-      {totalPages > 1 && (
-        <TablePagination
+      {totalPages > 1 ? <TablePagination
           currentPage={validPageNum}
           totalPages={totalPages}
           onPageChange={handlePageChange}
-        />
-      )}
+        /> : null}
 
       <CreateTicketSheet
         isOpen={isCreateTicketOpen}

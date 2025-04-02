@@ -1,5 +1,3 @@
-import { type LoaderFunctionArgs } from "react-router";
-import { Link, useLoaderData } from "react-router";
 import {
   ArrowLeft,
   ExternalLink,
@@ -8,6 +6,8 @@ import {
   ToggleRight,
 } from "lucide-react";
 import { useState } from "react";
+import { type LoaderFunctionArgs } from "react-router";
+import { Link, useLoaderData } from "react-router";
 
 import { CreateTicketSheet } from "~/components/jira/CreateTicketSheet";
 import { PageHeader } from "~/components/page-header";

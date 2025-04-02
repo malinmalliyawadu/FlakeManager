@@ -11,18 +11,19 @@ import { Toaster } from "sonner";
 
 import { AppHeader } from "~/components/app-header";
 import { ThemeProvider } from "~/components/ui/theme-provider";
-import { getCypressService } from "~/services/cypress.server";
 
 import "~/tailwind.css";
+import { prisma } from "./db.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const cypressService = getCypressService();
-  const repositories = await cypressService.getRepositories();
+  const repositories = await prisma.repository.findMany();
 
   const url = new URL(request.url);
   const selectedRepo = url.searchParams.get("repo") || "demo-repo";
 
-  const repository = await cypressService.getRepository(selectedRepo);
+  const repository = await prisma.repository.findUnique({
+    where: { id: selectedRepo },
+  });
 
   return {
     repositories,

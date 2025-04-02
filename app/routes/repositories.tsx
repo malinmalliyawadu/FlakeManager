@@ -1,11 +1,4 @@
-import { redirect, type ActionFunctionArgs } from "react-router";
-import {
-  Form as RemixForm,
-  useActionData,
-  useLoaderData,
-  useNavigation,
-  Link,
-} from "react-router";
+import { Repository } from "@prisma/client";
 import {
   ChevronLeft,
   Database,
@@ -16,6 +9,14 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { useState } from "react";
+import { redirect, type ActionFunctionArgs } from "react-router";
+import {
+  Form as RemixForm,
+  useActionData,
+  useLoaderData,
+  useNavigation,
+  Link,
+} from "react-router";
 
 import { PageHeader } from "~/components/page-header";
 import { Badge } from "~/components/ui/badge";
@@ -43,16 +44,16 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import { prisma } from "~/db.server";
 import { getCypressService } from "~/services/cypress.server";
 import { getJiraService } from "~/services/jira.server";
 import { type JiraBoard } from "~/services/jira.server";
-import { type Repository } from "~/types/cypress";
+
 
 export async function loader() {
-  const cypressService = getCypressService();
   const jiraService = getJiraService();
 
-  const repositories = await cypressService.getRepositories();
+  const repositories = await prisma.repository.findMany();
   const boards = await jiraService.getBoards();
 
   return {
@@ -112,7 +113,7 @@ export default function Repositories() {
       <Card className="shadow-xs">
         <CardHeader>
           <div className="flex items-center space-x-2">
-            <Database className="h-5 w-5 text-primary" />
+            <Database className="text-primary h-5 w-5" />
             <CardTitle>Repository Configuration</CardTitle>
           </div>
           <CardDescription>
@@ -143,11 +144,11 @@ export default function Repositories() {
                       <div className="flex flex-col">
                         <a
                           href={`/dashboard?repo=${repo.id}`}
-                          className="cursor-pointer font-medium hover:text-primary hover:underline"
+                          className="hover:text-primary cursor-pointer font-medium hover:underline"
                         >
                           {repo.name}
                         </a>
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-muted-foreground text-xs">
                           {repo.description}
                         </span>
                       </div>
@@ -208,7 +209,7 @@ export default function Repositories() {
           </div>
         </CardContent>
         <CardFooter className="flex items-center border-t px-6 py-4">
-          <div className="flex items-center text-sm text-muted-foreground">
+          <div className="text-muted-foreground flex items-center text-sm">
             <Server className="mr-2 h-4 w-4" />
             <span>Total Repositories: {repositories.length}</span>
           </div>
@@ -249,7 +250,7 @@ function RepositoryJiraBoardForm({
               className={`w-full ${hasChanged ? "border-amber-500" : ""}`}
             >
               <div className="flex items-center gap-1.5">
-                <Ticket className="h-3.5 w-3.5 text-primary" />
+                <Ticket className="text-primary h-3.5 w-3.5" />
                 <SelectValue placeholder="Select board" />
               </div>
             </SelectTrigger>

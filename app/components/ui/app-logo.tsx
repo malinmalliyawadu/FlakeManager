@@ -1,5 +1,5 @@
-import { Link } from "react-router";
 import { Snowflake } from "lucide-react";
+import { Link } from "react-router";
 
 interface AppLogoProps {
   to?: string;

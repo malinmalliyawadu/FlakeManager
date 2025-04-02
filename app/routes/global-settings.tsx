@@ -5,12 +5,12 @@ import {
 } from "react-router";
 import { useActionData, useLoaderData } from "react-router";
 
-import { PageHeader } from "~/components/page-header";
 import { GlobalSettingsForm } from "~/components/global-settings/GlobalSettingsForm";
-import { getCypressService } from "~/services/cypress.server";
+import { PageHeader } from "~/components/page-header";
+import { prisma } from "~/db.server";
 
 // Global settings schema
-export type GlobalSettings = {
+export interface GlobalSettings {
   flakeRecommendations: {
     small: {
       threshold: number;
@@ -48,7 +48,7 @@ export type GlobalSettings = {
     maxExcludedTestsPercentage: number;
     requireJiraTicket: boolean;
   };
-};
+}
 
 // Default global settings
 const defaultGlobalSettings: GlobalSettings = {
@@ -98,15 +98,15 @@ const defaultGlobalSettings: GlobalSettings = {
 };
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const cypressService = getCypressService();
-
   // In a real application, you would load these settings from a database
   // For now, we'll use the defaultGlobalSettings as a placeholder
   const globalSettings =
-    (await cypressService.getGlobalSettings()) || defaultGlobalSettings;
+    (await prisma.globalSettings.findUnique({
+      where: { id: "global" },
+    })) || defaultGlobalSettings;
 
   // Get repositories to show impact of changes
-  const repositories = await cypressService.getRepositories();
+  const repositories = await prisma.repository.findMany();
 
   return {
     globalSettings,
@@ -116,7 +116,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
-  const cypressService = getCypressService();
 
   // Parse form data for flake recommendations
   const smallFlakeThreshold = parseInt(

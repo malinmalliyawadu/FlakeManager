@@ -1,6 +1,7 @@
-import { Form } from "react-router";
+import { Repository } from "@prisma/client";
+import { Save, ChevronLeft, Gauge, InfoIcon } from "lucide-react";
 import { useState, useEffect } from "react";
-import { Save, ChevronLeft, Gauge, Shield, InfoIcon } from "lucide-react";
+import { Form } from "react-router";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -13,8 +14,6 @@ import {
 } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { Textarea } from "~/components/ui/textarea";
-import { type Repository } from "~/types/cypress";
 import { type GlobalSettings } from "~/routes/global-settings";
 
 interface GlobalSettingsFormProps {
@@ -243,7 +242,7 @@ export function GlobalSettingsForm({
     <Card className="shadow-xs">
       <CardHeader>
         <div className="flex items-center space-x-2">
-          <Gauge className="h-5 w-5 text-primary" />
+          <Gauge className="text-primary h-5 w-5" />
           <CardTitle>Global Flake Management Settings</CardTitle>
         </div>
         <CardDescription>
@@ -261,7 +260,7 @@ export function GlobalSettingsForm({
               type="button"
               className={`px-4 py-2 font-medium ${
                 activeTab === "recommendations"
-                  ? "border-b-2 border-primary text-primary"
+                  ? "border-primary text-primary border-b-2"
                   : "text-muted-foreground"
               }`}
               onClick={() => setActiveTab("recommendations")}
@@ -272,7 +271,7 @@ export function GlobalSettingsForm({
               type="button"
               className={`px-4 py-2 font-medium ${
                 activeTab === "repoSizes"
-                  ? "border-b-2 border-primary text-primary"
+                  ? "border-primary text-primary border-b-2"
                   : "text-muted-foreground"
               }`}
               onClick={() => setActiveTab("repoSizes")}
@@ -283,7 +282,7 @@ export function GlobalSettingsForm({
               type="button"
               className={`px-4 py-2 font-medium ${
                 activeTab === "guardrails"
-                  ? "border-b-2 border-primary text-primary"
+                  ? "border-primary text-primary border-b-2"
                   : "text-muted-foreground"
               }`}
               onClick={() => setActiveTab("guardrails")}
@@ -327,11 +326,10 @@ export function GlobalSettingsForm({
           />
 
           {/* Recommendations Tab Content */}
-          {activeTab === "recommendations" && (
-            <div className="space-y-6">
+          {activeTab === "recommendations" ? <div className="space-y-6">
               {/* Impact Preview Section */}
               <div
-                className={`rounded-lg border border-muted p-4 ${
+                className={`border-muted rounded-lg border p-4 ${
                   recommendationsChanged
                     ? "bg-amber-50 dark:bg-amber-950/20"
                     : "bg-muted/5"
@@ -355,7 +353,7 @@ export function GlobalSettingsForm({
                     <h3 className="text-base font-medium">
                       Recommendations Impact
                     </h3>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-muted-foreground text-xs">
                       {recommendationsChanged
                         ? "Preview of your recommendation changes across all repositories"
                         : "See how recommendation changes will affect your repositories"}
@@ -367,7 +365,7 @@ export function GlobalSettingsForm({
                 <div className="mt-4 space-y-4">
                   <div className="rounded-md border p-3">
                     <h4 className="text-sm font-medium">Impact Summary</h4>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       {recommendationsChanged
                         ? "These changes would affect how thresholds are recommended for new repositories and when using the 'reset to defaults' option."
                         : "Change the threshold values to see the impact on repository recommendations."}
@@ -437,7 +435,7 @@ export function GlobalSettingsForm({
                 <h2 className="text-lg font-semibold">
                   Flake Rate Recommendations
                 </h2>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   Configure the default flake rate threshold recommendations
                   based on test suite size. These values will be recommended
                   when setting up a new repository.
@@ -484,7 +482,7 @@ export function GlobalSettingsForm({
                 <h2 className="text-lg font-semibold">
                   Failure Rate Recommendations
                 </h2>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   Configure the default failure rate threshold recommendations
                   based on test suite size. These values will be recommended
                   when setting up a new repository.
@@ -525,17 +523,15 @@ export function GlobalSettingsForm({
                   />
                 </div>
               </div>
-            </div>
-          )}
+            </div> : null}
 
           {/* Add Repository Sizes Tab Content */}
-          {activeTab === "repoSizes" && (
-            <div className="space-y-6">
-              <div className="rounded-lg border border-muted bg-muted/5 p-4">
+          {activeTab === "repoSizes" ? <div className="space-y-6">
+              <div className="border-muted bg-muted/5 rounded-lg border p-4">
                 <h2 className="text-lg font-semibold">
                   Repository Size Configuration
                 </h2>
-                <p className="mt-2 text-sm text-muted-foreground">
+                <p className="text-muted-foreground mt-2 text-sm">
                   Configure the thresholds that determine whether a repository
                   is considered small, medium, or large. These values affect
                   which recommendations are applied to repositories based on
@@ -566,11 +562,11 @@ export function GlobalSettingsForm({
                       <span className="text-lg font-medium">tests</span>
                     </div>
                     {actionData?.errors?.smallRepoThreshold ? (
-                      <p className="text-sm text-destructive">
+                      <p className="text-destructive text-sm">
                         {actionData.errors.smallRepoThreshold}
                       </p>
                     ) : null}
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       Repositories with fewer than this number of tests are
                       considered small.
                     </p>
@@ -599,11 +595,11 @@ export function GlobalSettingsForm({
                       <span className="text-lg font-medium">tests</span>
                     </div>
                     {actionData?.errors?.mediumRepoThreshold ? (
-                      <p className="text-sm text-destructive">
+                      <p className="text-destructive text-sm">
                         {actionData.errors.mediumRepoThreshold}
                       </p>
                     ) : null}
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       Repositories with test count between the small threshold
                       and this number are considered medium. Anything above this
                       is large.
@@ -611,11 +607,11 @@ export function GlobalSettingsForm({
                   </div>
                 </div>
 
-                <div className="mt-6 space-y-2 rounded-md border bg-muted/50 p-4">
+                <div className="bg-muted/50 mt-6 space-y-2 rounded-md border p-4">
                   <h3 className="text-sm font-medium">
                     Repository Size Classification
                   </h3>
-                  <ul className="space-y-1 text-xs text-muted-foreground">
+                  <ul className="text-muted-foreground space-y-1 text-xs">
                     <li>
                       • <strong>Small:</strong> Fewer than {smallRepoThreshold}{" "}
                       tests
@@ -649,14 +645,12 @@ export function GlobalSettingsForm({
                   </div>
                 </div>
               </div>
-            </div>
-          )}
+            </div> : null}
 
           {/* Guardrails Tab Content */}
-          {activeTab === "guardrails" && (
-            <div className="space-y-6">
+          {activeTab === "guardrails" ? <div className="space-y-6">
               <h2 className="text-lg font-semibold">Exclusion Guardrails</h2>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 Configure guardrails to prevent excessive test exclusion and
                 enforce best practices. These guardrails apply to all
                 repositories.
@@ -686,11 +680,11 @@ export function GlobalSettingsForm({
                     <span className="text-lg font-medium">tests</span>
                   </div>
                   {actionData?.errors?.maxExcludedTests ? (
-                    <p className="text-sm text-destructive">
+                    <p className="text-destructive text-sm">
                       {actionData.errors.maxExcludedTests}
                     </p>
                   ) : null}
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     The maximum number of tests that can be excluded per
                     repository.
                   </p>
@@ -723,11 +717,11 @@ export function GlobalSettingsForm({
                     <span className="text-lg font-medium">%</span>
                   </div>
                   {actionData?.errors?.maxExcludedTestsPercentage ? (
-                    <p className="text-sm text-destructive">
+                    <p className="text-destructive text-sm">
                       {actionData.errors.maxExcludedTestsPercentage}
                     </p>
                   ) : null}
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     The maximum percentage of tests that can be excluded per
                     repository.
                   </p>
@@ -736,12 +730,12 @@ export function GlobalSettingsForm({
 
               <div className="space-y-3 pt-4">
                 <div className="flex items-center space-x-2">
-                  <div className="h-4 w-10 cursor-pointer rounded-full bg-muted">
+                  <div className="bg-muted h-4 w-10 cursor-pointer rounded-full">
                     <div
                       className={`h-4 w-4 transform rounded-full transition-transform ${
                         requireJiraTicket
-                          ? "translate-x-6 bg-primary"
-                          : "translate-x-0 bg-muted-foreground"
+                          ? "bg-primary translate-x-6"
+                          : "bg-muted-foreground translate-x-0"
                       }`}
                       onClick={() => setRequireJiraTicket(!requireJiraTicket)}
                     ></div>
@@ -754,7 +748,7 @@ export function GlobalSettingsForm({
                     Require JIRA Ticket for Manual Exclusions
                   </Label>
                 </div>
-                <p className="pl-12 text-sm text-muted-foreground">
+                <p className="text-muted-foreground pl-12 text-sm">
                   When enabled, a JIRA ticket must be created and linked when
                   manually excluding a test. This helps track exclusions and
                   ensures they are addressed eventually.
@@ -767,21 +761,20 @@ export function GlobalSettingsForm({
                 />
               </div>
 
-              <div className="space-y-3 rounded-md border bg-muted/50 p-4">
+              <div className="bg-muted/50 space-y-3 rounded-md border p-4">
                 <h3 className="font-medium">How guardrails work</h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   These guardrails prevent teams from excluding too many tests
                   which could hide real issues. When a repository exceeds these
                   guardrails, users will be prompted to fix the flaky tests
                   before excluding more.
                 </p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   The system will enforce the more restrictive of the two limits
                   (absolute count or percentage).
                 </p>
               </div>
-            </div>
-          )}
+            </div> : null}
         </Form>
       </CardContent>
 
@@ -849,16 +842,14 @@ function ThresholdInput({
         <span className="text-lg font-medium">%</span>
       </div>
 
-      {error ? <p className="text-sm text-destructive">{error}</p> : null}
+      {error ? <p className="text-destructive text-sm">{error}</p> : null}
 
-      <p className="text-sm text-muted-foreground">{description}</p>
+      <p className="text-muted-foreground text-sm">{description}</p>
 
-      {infoText && (
-        <div className="mt-2 flex items-start gap-2 rounded-md bg-muted/50 p-2">
-          <InfoIcon className="mt-0.5 h-4 w-4 text-muted-foreground" />
-          <p className="text-xs text-muted-foreground">{infoText}</p>
-        </div>
-      )}
+      {infoText ? <div className="bg-muted/50 mt-2 flex items-start gap-2 rounded-md p-2">
+          <InfoIcon className="text-muted-foreground mt-0.5 h-4 w-4" />
+          <p className="text-muted-foreground text-xs">{infoText}</p>
+        </div> : null}
     </div>
   );
 }

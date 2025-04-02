@@ -1,5 +1,6 @@
-import { Link } from "react-router";
+import { Repository } from "@prisma/client";
 import { AlertTriangle, Gauge, Settings } from "lucide-react";
+import { Link } from "react-router";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -10,7 +11,6 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { type Repository } from "~/types/cypress";
 
 interface ThresholdsCardProps {
   repository: Repository | null;
@@ -29,7 +29,7 @@ export function ThresholdsCard({
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Gauge className="h-5 w-5 text-primary" />
+            <Gauge className="text-primary h-5 w-5" />
             <CardTitle>Current Thresholds</CardTitle>
           </div>
           {needsAttention(flakeThreshold, failureThreshold) ? (
@@ -108,7 +108,7 @@ function ThresholdItem({
               : "High"}
         </div>
       </div>
-      <p className="text-xs text-muted-foreground">{description}</p>
+      <p className="text-muted-foreground text-xs">{description}</p>
     </div>
   );
 }

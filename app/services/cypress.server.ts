@@ -1,14 +1,89 @@
-import { prisma } from "~/db.server";
 import {
   type Repository as AppRepository,
   type Test as AppTest,
   type GlobalSettings as AppGlobalSettings,
-} from "~/types/cypress";
+} from "@prisma/client";
+
+import { prisma } from "~/db.server";
 
 interface CypressApiConfig {
   apiKey: string;
   apiUrl: string;
 }
+
+// Report Response Types
+interface ProjectListResponse {
+  project_name: string;
+  id: string;
+}
+
+interface UsagePerProjectResponse {
+  project_name: string;
+  test_run_count: number;
+}
+
+interface SpecDetailsResponse {
+  project_name: string;
+  spec: string;
+  test_replay_url: string;
+}
+
+interface FlakyTestDetailsResponse {
+  project_name: string;
+  spec: string;
+  flaky_count: number;
+  test_replay_url: string;
+}
+
+interface TopFailuresResponse {
+  project_name: string;
+  spec: string;
+  cnt_passed: number;
+  cnt_failed: number;
+  cnt_total: number;
+  fail_rate: number;
+  test_replay_url: string;
+}
+
+type ReportId =
+  | "project-list"
+  | "usage-per-project-summary"
+  | "usage-per-project-over-time"
+  | "cypress-test-types"
+  | "test-suite-size-summary"
+  | "test-suite-over-time"
+  | "project-test-count-and-status"
+  | "status-by-run"
+  | "status-by-run-over-time"
+  | "status-by-spec"
+  | "status-by-spec-over-time"
+  | "status-by-test-run"
+  | "status-by-test-run-over-time"
+  | "cypress-run-versions"
+  | "cypress-run-versions-over-time"
+  | "cypress-run-versions-per-project-over-time"
+  | "browsers-tested"
+  | "browser-versions-tested"
+  | "browser-versions-tested-over-time"
+  | "browser-versions-tested-per-project-over-time"
+  | "spec-details"
+  | "failed-test-details"
+  | "test-details"
+  | "average-run-duration-over-time"
+  | "average-spec-duration-over-time"
+  | "test-flake-detail-over-time"
+  | "flake-rate-per-project"
+  | "flake-rate-per-project-over-time"
+  | "flaky-test-details"
+  | "top-flaky-per-project"
+  | "top-failures-per-project"
+  | "top-errors-per-project"
+  | "ui-coverage-per-project-summary"
+  | "ui-coverage-per-project-over-time"
+  | "ui-coverage-details"
+  | "accessibility-per-project-summary"
+  | "accessibility-per-project-over-time"
+  | "accessibility-details";
 
 // Default values for a static setup
 const defaultConfig: CypressApiConfig = {
@@ -24,7 +99,7 @@ export class CypressService {
   }
 
   private async fetchFromCypressCloud<T>(
-    reportId: string,
+    reportId: ReportId,
     params: Record<string, string> = {},
   ): Promise<T> {
     const queryParams = new URLSearchParams({
@@ -44,13 +119,14 @@ export class CypressService {
 
   async getRepositories(): Promise<AppRepository[]> {
     // Get project list from Cypress Cloud
-    const projects = await this.fetchFromCypressCloud<
-      { project_name: string; id: string }[]
-    >("project-list", { start_date: this.getDefaultStartDate() });
+    const projects = await this.fetchFromCypressCloud<ProjectListResponse[]>(
+      "project-list",
+      { start_date: this.getDefaultStartDate() },
+    );
 
     // Get usage data for each project
     const usageData = await this.fetchFromCypressCloud<
-      { project_name: string; test_run_count: number }[]
+      UsagePerProjectResponse[]
     >("usage-per-project-summary", { start_date: this.getDefaultStartDate() });
 
     // Transform the data into our Repository type
@@ -75,43 +151,48 @@ export class CypressService {
   }
 
   async getTestsForRepo(repo: string, timePeriod?: string): Promise<AppTest[]> {
-    // Get flaky test details from Cypress Cloud
-    const flakyTests = await this.fetchFromCypressCloud<
+    // First get the repository to get its name
+    const repository = await this.getRepository(repo);
+    if (!repository) {
+      console.error(`Repository not found: ${repo}`);
+      return [];
+    }
+
+    // Get all test details from Cypress Cloud
+    const allTests = await this.fetchFromCypressCloud<SpecDetailsResponse[]>(
+      "spec-details",
       {
-        project_name: string;
-        spec: string;
-        flaky_count: number;
-        test_replay_url: string;
-      }[]
+        start_date: this.getDefaultStartDate(),
+        projects: repository.name,
+      },
+    );
+
+    // Get flaky test details
+    const flakyTests = await this.fetchFromCypressCloud<
+      FlakyTestDetailsResponse[]
     >("flaky-test-details", {
       start_date: this.getDefaultStartDate(),
-      projects: repo,
+      projects: repository.name,
     });
 
     // Get failure data
-    const failures = await this.fetchFromCypressCloud<
+    const failures = await this.fetchFromCypressCloud<TopFailuresResponse[]>(
+      "top-failures-per-project",
       {
-        project_name: string;
-        spec: string;
-        cnt_passed: number;
-        cnt_failed: number;
-        cnt_total: number;
-        fail_rate: number;
-        test_replay_url: string;
-      }[]
-    >("top-failures-per-project", {
-      start_date: this.getDefaultStartDate(),
-      projects: repo,
-    });
+        start_date: this.getDefaultStartDate(),
+        projects: repository.name,
+      },
+    );
 
     // Transform the data into our Test type
-    return flakyTests.map((test) => {
+    return allTests.map((test) => {
+      const flakyTest = flakyTests.find((f) => f.spec === test.spec);
       const failure = failures.find((f) => f.spec === test.spec);
       return {
         id: test.spec, // Using spec path as ID
         name: this.getTestNameFromSpec(test.spec),
         file: test.spec,
-        flakeRate: test.flaky_count,
+        flakeRate: flakyTest?.flaky_count || 0,
         failureRate: failure?.fail_rate || 0,
         excluded: false, // This should be managed in our database
         manualOverride: false, // This should be managed in our database

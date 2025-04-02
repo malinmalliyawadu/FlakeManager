@@ -1,5 +1,6 @@
-import { Form, useNavigate } from "react-router";
+import { Repository, Test } from "@prisma/client";
 import { Save, ChevronLeft, Gauge, CalendarRange } from "lucide-react";
+import { Form, useNavigate } from "react-router";
 
 import { ThresholdsImpact } from "~/components/thresholds/ThresholdsImpact";
 import { Button } from "~/components/ui/button";
@@ -20,7 +21,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { type Repository, type Test } from "~/types/cypress";
 
 interface ThresholdsFormProps {
   repository: Repository;

@@ -1,6 +1,7 @@
-import { Form, useLocation } from "react-router";
+import { Test } from "@prisma/client";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
+import { Form, useLocation } from "react-router";
 import { z } from "zod";
 
 import { Button } from "~/components/ui/button";
@@ -23,7 +24,6 @@ import {
 } from "~/components/ui/sheet";
 import { Textarea } from "~/components/ui/textarea";
 import { type JiraBoard } from "~/services/jira.server";
-import { type Test } from "~/types/cypress";
 
 interface CreateTicketSheetProps {
   isOpen: boolean;
@@ -163,7 +163,7 @@ export function CreateTicketSheet({
         <Form method="post" onSubmit={handleSubmit} className="space-y-6 py-4">
           <div className="space-y-2">
             <div className="font-medium">Test Details</div>
-            <div className="rounded-md bg-secondary/50 p-3">
+            <div className="bg-secondary/50 rounded-md p-3">
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div className="font-medium">Name:</div>
                 <div>{test.name}</div>

@@ -5,18 +5,21 @@ import { DashboardStats } from "~/components/dashboard/DashboardStats";
 import { TestsTable } from "~/components/dashboard/TestsTable";
 import { ThresholdsCard } from "~/components/dashboard/ThresholdsCard";
 import { PageHeader } from "~/components/page-header";
-import { getCypressService } from "~/services/cypress.server";
+import { prisma } from "~/db.server";
 import { getJiraService } from "~/services/jira.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const cypressService = getCypressService();
   const jiraService = getJiraService();
   const url = new URL(request.url);
   const selectedRepo = url.searchParams.get("repo") || "demo-repo";
 
-  const repositories = await cypressService.getRepositories();
-  const repository = await cypressService.getRepository(selectedRepo);
-  const tests = await cypressService.getTestsForRepo(selectedRepo);
+  const repositories = await prisma.repository.findMany();
+  const repository = await prisma.repository.findUnique({
+    where: { id: selectedRepo },
+  });
+  const tests = await prisma.test.findMany({
+    where: { repositoryId: selectedRepo },
+  });
 
   // Create Jira tickets for tests that exceed thresholds and don't have a ticket
   const flakeThreshold = repository?.flakeThreshold || 5;

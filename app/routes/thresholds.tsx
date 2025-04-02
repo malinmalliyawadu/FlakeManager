@@ -1,30 +1,33 @@
+import { useReducer } from "react";
 import {
   redirect,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
 } from "react-router";
 import { useActionData, useLoaderData } from "react-router";
-import { useReducer } from "react";
 
 import { PageHeader } from "~/components/page-header";
 import { MetricsSlideOver } from "~/components/thresholds/MetricsSlideOver";
 import { ThresholdsForm } from "~/components/thresholds/ThresholdsForm";
-import { getCypressService } from "~/services/cypress.server";
+import { prisma } from "~/db.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const cypressService = getCypressService();
   const url = new URL(request.url);
   const selectedRepo = url.searchParams.get("repo") || "demo-repo";
   const timePeriod = url.searchParams.get("timePeriod") || "30d";
 
-  const repositories = await cypressService.getRepositories();
-  const repository = await cypressService.getRepository(selectedRepo);
+  const repositories = await prisma.repository.findMany();
+  const repository = await prisma.repository.findUnique({
+    where: { id: selectedRepo },
+  });
   if (!repository) {
     throw new Response("Repository not found", { status: 404 });
   }
 
   // Get all tests to show the impact of threshold changes, filtered by time period
-  const tests = await cypressService.getTestsForRepo(selectedRepo, timePeriod);
+  const tests = await prisma.test.findMany({
+    where: { repositoryId: selectedRepo },
+  });
 
   return {
     repository,
@@ -37,7 +40,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
-  const cypressService = getCypressService();
 
   const repoId = formData.get("repoId") as string;
   const flakeThreshold = parseInt(formData.get("flakeThreshold") as string, 10);
@@ -75,23 +77,25 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   // Update the repository thresholds
-  await cypressService.updateRepositoryThresholds(
-    repoId,
-    flakeThreshold,
-    failureThreshold,
-    timePeriod,
-  );
+  await prisma.repository.update({
+    where: { id: repoId },
+    data: {
+      flakeThreshold,
+      failureThreshold,
+      timePeriod,
+    },
+  });
 
   // Include timePeriod in the redirect URL
   return redirect(`/dashboard?repo=${repoId}&timePeriod=${timePeriod}`);
 }
 
 // Define the state type and action types for our reducer
-type ThresholdsState = {
+interface ThresholdsState {
   flakeThreshold: number;
   failureThreshold: number;
   timePeriod: string;
-};
+}
 
 type ThresholdsAction =
   | { type: "SET_FLAKE_THRESHOLD"; payload: number }

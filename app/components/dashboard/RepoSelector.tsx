@@ -1,6 +1,7 @@
-import { Link } from "react-router";
+import { Repository } from "@prisma/client";
 import { FolderGit2 } from "lucide-react";
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -10,7 +11,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { type Repository } from "~/types/cypress";
 
 interface RepoSelectorProps {
   repositories: Repository[];
@@ -39,7 +39,7 @@ export function RepoSelector({
         <Select value={value} onValueChange={handleChange}>
           <SelectTrigger className="border-input bg-background">
             <div className="flex items-center space-x-2">
-              <FolderGit2 className="h-4 w-4 text-muted-foreground" />
+              <FolderGit2 className="text-muted-foreground h-4 w-4" />
               <SelectValue placeholder="Select a repository" />
             </div>
           </SelectTrigger>
@@ -48,7 +48,7 @@ export function RepoSelector({
               <SelectItem key={repo.id} value={repo.id}>
                 <div className="flex flex-col">
                   <span>{repo.name}</span>
-                  <span className="max-w-[200px] truncate text-xs text-muted-foreground">
+                  <span className="text-muted-foreground max-w-[200px] truncate text-xs">
                     {repo.description}
                   </span>
                 </div>

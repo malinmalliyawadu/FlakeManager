@@ -1,6 +1,9 @@
-import { useLocation, useNavigate, useSearchParams } from "react-router";
+import { type Repository } from "@prisma/client";
 import { Database, Gauge, LayoutDashboard, Settings } from "lucide-react";
+import { useLocation, useNavigate, useSearchParams } from "react-router";
 
+import { AppLogo } from "~/components/ui/app-logo";
+import { NavLink } from "~/components/ui/nav-link";
 import {
   Select,
   SelectContent,
@@ -8,10 +11,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { NavLink } from "~/components/ui/nav-link";
-import { AppLogo } from "~/components/ui/app-logo";
-import { cn } from "~/lib/utils";
-import { type Repository } from "~/types/cypress";
 
 import { ThemeToggle } from "./ui/theme-toggle";
 
@@ -46,7 +45,7 @@ export function AppHeader({ repositories, selectedRepo }: AppHeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 z-10 border-b bg-linear-to-r from-blue-50/70 via-background to-cyan-50/70 backdrop-blur-sm supports-backdrop-filter:bg-opacity-80 dark:border-slate-800 dark:from-slate-950/90 dark:to-slate-900/90">
+    <header className="via-background supports-backdrop-filter:bg-opacity-80 sticky top-0 z-10 border-b bg-linear-to-r from-blue-50/70 to-cyan-50/70 backdrop-blur-sm dark:border-slate-800 dark:from-slate-950/90 dark:to-slate-900/90">
       <div className="mx-auto max-w-(--breakpoint-xl) px-4 pt-1 md:px-8">
         <div className="flex h-16 items-center">
           <div className="mr-4 flex items-center">

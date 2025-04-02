@@ -1,7 +1,8 @@
 import { Search, XCircle } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
-import { Input } from "~/components/ui/input";
+
 import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
 
 interface TableSearchProps {
   onSearch: (searchTerm: string) => void;
@@ -49,8 +50,7 @@ export function TableSearch({
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        {searchTerm && (
-          <Button
+        {searchTerm ? <Button
             type="button"
             variant="ghost"
             size="sm"
@@ -59,8 +59,7 @@ export function TableSearch({
           >
             <XCircle className="h-4 w-4 text-muted-foreground" />
             <span className="sr-only">Clear search</span>
-          </Button>
-        )}
+          </Button> : null}
       </div>
     </div>
   );

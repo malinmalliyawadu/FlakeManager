@@ -1,6 +1,7 @@
+import { Test } from "@prisma/client";
 import { type LoaderFunctionArgs } from "react-router";
+
 import { getCypressService } from "~/services/cypress.server";
-import type { ApiResponse, Test } from "~/types/cypress";
 
 /**
  * API endpoint that returns a list of tests to exclude from a repository.

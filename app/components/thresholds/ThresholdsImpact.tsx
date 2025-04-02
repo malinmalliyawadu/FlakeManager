@@ -1,7 +1,6 @@
+import { Test } from "@prisma/client";
 import { AlertTriangle, Lightbulb, Check } from "lucide-react";
 import { useState, useEffect } from "react";
-
-import { type Test } from "~/types/cypress";
 
 interface ThresholdsImpactProps {
   tests: Test[];
@@ -84,10 +83,12 @@ export function ThresholdsImpact({
         <div
           className={`text-center transition-all duration-300 ${noThresholdChanges ? "text-muted-foreground text-sm" : "rounded-md border border-green-200 bg-green-50 p-3 dark:border-green-800 dark:bg-green-900/20"}`}
         >
-          {!noThresholdChanges ? <div className="flex items-center justify-center gap-2 text-green-700 dark:text-green-400">
+          {!noThresholdChanges ? (
+            <div className="flex items-center justify-center gap-2 text-green-700 dark:text-green-400">
               <Check className="h-4 w-4" />
               <span>All tests will maintain their current status.</span>
-            </div> : null}
+            </div>
+          ) : null}
         </div>
       ) : (
         <div className="space-y-4">
@@ -118,9 +119,11 @@ export function ThresholdsImpact({
           </div>
 
           {/* Changed Tests Lists */}
-          {(impact.testListToInclude.length > 0 ||
-            impact.testListToExclude.length > 0) ? <div className="mt-3 grid gap-3 md:grid-cols-2">
-              {impact.testListToInclude.length > 0 ? <div
+          {impact.testListToInclude.length > 0 ||
+          impact.testListToExclude.length > 0 ? (
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
+              {impact.testListToInclude.length > 0 ? (
+                <div
                   className={`bg-card/50 space-y-1 rounded-md border p-2 ${hasChanges ? "animate-fadeIn" : ""}`}
                 >
                   <h3 className="flex items-center gap-1.5 text-xs font-medium">
@@ -140,9 +143,11 @@ export function ThresholdsImpact({
                       </div>
                     ))}
                   </div>
-                </div> : null}
+                </div>
+              ) : null}
 
-              {impact.testListToExclude.length > 0 ? <div
+              {impact.testListToExclude.length > 0 ? (
+                <div
                   className={`bg-card/50 space-y-1 rounded-md border p-2 ${hasChanges ? "animate-fadeIn" : ""}`}
                 >
                   <h3 className="flex items-center gap-1.5 text-xs font-medium">
@@ -162,8 +167,10 @@ export function ThresholdsImpact({
                       </div>
                     ))}
                   </div>
-                </div> : null}
-            </div> : null}
+                </div>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       )}
     </div>
@@ -192,7 +199,9 @@ function ImpactStat({
         {icon}
       </div>
       <div className="text-xl font-bold">{count}</div>
-      {description ? <p className="text-muted-foreground text-xs">{description}</p> : null}
+      {description ? (
+        <p className="text-muted-foreground text-xs">{description}</p>
+      ) : null}
     </div>
   );
 }
